@@ -177,7 +177,7 @@ int AudioManager::playSe(const std::string baseName, bool roop) {
 
 }
 
-// チャンク指定で再生
+// チャンク指定で再生(0〜7)
 int AudioManager::playSe(const std::string fileName, int chunkNo) {
     return this->playSe(fileName, chunkNo, false, _seVolume);
 }

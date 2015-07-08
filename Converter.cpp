@@ -1,7 +1,3 @@
-﻿/****************************************************************************
-Copyright (c) 2015 Hiroshi Fukuda.
-****************************************************************************/
-
 //
 // Converter.cpp
 //
@@ -17,7 +13,7 @@ cocos2d::Color4B Converter::fromARGB(std::string code) {
 
     // 0xARGBコードが見つかったら
     if (code.find("0x") == 0 && code.length() == 10) {
-        
+
         try {
             // A
             int a = (int)strtol(code.substr(2, 2).c_str(), nullptr, 16);

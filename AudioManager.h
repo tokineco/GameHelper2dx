@@ -1,10 +1,6 @@
-﻿/****************************************************************************
-Copyright (c) 2015 Hiroshi Fukuda.
-****************************************************************************/
-
 //
 // AudioManager.h
-// (シングルトン)
+// (singleton)
 //
 
 #ifndef __AudioManager__
@@ -15,30 +11,30 @@ Copyright (c) 2015 Hiroshi Fukuda.
 class AudioManager {
 
 public:
-    
+
     // SE用チャンク
     int _chunk[8];
-    
+
 private:
-	
+
 	AudioManager();
 	static AudioManager* _instance;
 
     // 環境に応じて拡張子付きファイル名に変換する
     std::string getFileName(const std::string baseName);
-    
+
     // SE音量
     CC_SYNTHESIZE(float, _seVolume, SeVolume);
-    
+
 public:
 
 	~AudioManager();
 	static AudioManager* getInstance();
 	static void deleteInstance();
-	
+
     void preloadSe(const std::string fileName);
     void releaseSe(const std::string fileName);
-    
+
     int playSe(const std::string fileName, int chunkNo);
     int playSe(const std::string fileName, bool roop = false);
     int playSe(const std::string fileName, int chunkNo, bool roop, float volume);

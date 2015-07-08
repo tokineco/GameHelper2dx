@@ -1,10 +1,6 @@
-﻿/****************************************************************************
-Copyright (c) 2015 Hiroshi Fukuda.
-****************************************************************************/
-
 //
 // AudioManager.cpp
-// (シングルトン)
+// (singleton)
 //
 
 #pragma execution_character_set("utf-8")
@@ -35,7 +31,7 @@ AudioManager::~AudioManager() {
 
 // 初期化
 AudioManager* AudioManager::getInstance() {
-	
+
 	if (_instance == NULL) {
         _instance = new AudioManager();
 	}
@@ -133,19 +129,19 @@ void AudioManager::releaseSe(const std::string baseName) {
 
 // 効果音を再生する
 int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, float volume) {
-    
+
     int soundId = -1;
     bool chunkFlag = false;
-    
+
     std::string fileName = getFileName(baseName);
     if (fileName == "") {
         return soundId;
     }
-    
+
     // チャンクが指定されていたら
     if (chunkNo >= 0 && chunkNo < sizeof(_chunk) / sizeof(_chunk[0])) {
         chunkFlag = true;
-        
+
         // 指定チャンクの再生中の音を停止
         this->stopSe(_chunk[chunkNo]);
     }
@@ -156,18 +152,18 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
 #else
         soundId = AudioEngine::play2d(fileName, roop, volume);
 #endif
-    
+
     if (chunkFlag) {
         // チャンクにSoundIdを登録
         _chunk[chunkNo] = soundId;
     }
 
     return soundId;
-    
+
 }
 
 int AudioManager::playSe(const std::string baseName, bool roop, float volume) {
-    
+
     return this->playSe(baseName, -1, roop, volume);
 }
 

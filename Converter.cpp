@@ -53,3 +53,33 @@ bool Converter::stringToBool(std::string strBool, bool def) {
 bool Converter::stringToBool(std::string strBool) {
     return stringToBool(strBool, false);
 }
+
+// 文字列のSplit
+std::vector<std::string> Converter::split(std::string str, char delim) {
+
+    std::vector<std::string> result;
+    std::string::size_type current = 0, delimIdx;
+
+    while ((delimIdx = str.find_first_of(delim, current)) != std::string::npos) {
+        result.push_back(std::string(str, current, delimIdx - current));
+        current = delimIdx + 1;
+    }
+    result.push_back(std::string(str, current, str.size() - current));
+
+    return result;
+
+}
+
+// 文字列の先頭と末尾にあるホワイトスペースを取り除く
+std::string Converter::trim(const std::string& str, const char* trimChars /* = " \t\v\r\n" */) {
+
+    std::string result;
+    std::string::size_type left = str.find_first_not_of(trimChars);
+
+    if (left != std::string::npos) {
+        std::string::size_type right = str.find_last_not_of(trimChars);
+        result = str.substr(left, right - left + 1);
+    }
+
+    return result;
+}

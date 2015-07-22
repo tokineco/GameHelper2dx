@@ -95,7 +95,7 @@ std::string AudioManager::getFileName(const std::string baseName) {
     }
 
     // それでも見つからなければ空文字を返して、その先でエラーとする
-    log("file not found %s.", baseName);
+    log("file not found %s.", baseName.c_str());
     return baseName;
 
 }

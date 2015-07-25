@@ -8,36 +8,55 @@
 
 class AudioManager {
 
-public:
-    
-    // SE用チャンク
-    int _chunk[8];
-    
 private:
+
+    enum AudioType {
+        BGM = 0,
+        SE = 1
+    };
 	
 	AudioManager();
 	static AudioManager* _instance;
 
-    // 環境に応じて拡張子付きファイル名に変換する
-    std::string getFileName(const std::string baseName);
-    // 拡張子を取得する
-    std::string getExtension(const std::string fileName);
-    
+    // BGMファイルリスト
+    std::map<std::string, std::string> _bgmList;
+    // SEファイルリスト
+    std::map<std::string, std::string> _seList;
+
+    // SE用チャンク
+    int _chunk[8];
+
     // BGMは1種類のみ
     int _bgmId = -1;
     // 同じファイル名の場合は無視
     std::string _bgmFileName = "";
 
+    // オーディオ管理ファイルを使用する場合はそのファイルパス
+    CC_SYNTHESIZE(std::string, _audioListFile, AudioListFile);
+
     // BGM音量
     CC_SYNTHESIZE(float, _bgmVolume, BgmVolume);
     // SE音量
     CC_SYNTHESIZE(float, _seVolume, SeVolume);
+
+    //==========================
+
+    // 環境に応じて拡張子付きファイル名に変換する
+    std::string getFileName(std::string baseName, AudioType type);
+
+    // 拡張子を取得する
+    std::string getExtension(const std::string fileName);
+   
+
     
 public:
 
 	~AudioManager();
 	static AudioManager* getInstance();
 	static void deleteInstance();
+
+    // オーディオ管理ファイルを読み込む
+    bool readAudioListFile(const std::string fileName);
 	
     void preloadBgm(const std::string baseName);
     void releaseBgm(const std::string baseName);

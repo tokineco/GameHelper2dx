@@ -5,6 +5,9 @@
 
 #include "SimpleAudioEngine.h"              // Windows-wav
 #include "audio/include/AudioEngine.h"      // iOS, Android
+#include "json/rapidjson.h"
+#include "json/document.h"
+
 #include "AudioManager.h"
 
 USING_NS_CC;
@@ -14,12 +17,13 @@ AudioManager* AudioManager::_instance = NULL;
 
 // コンストラクタ
 AudioManager::AudioManager()
-    : _bgmVolume(0.5f)
+    : _audioListFile("")
+    , _bgmVolume(0.5f)
     , _seVolume(0.6f)
 {
     // チャンク配列の初期化
     for(int i=0; i < sizeof(_chunk) / sizeof(_chunk[0]); i++) {
-        _chunk[i] = -1;
+        _chunk[i] = AudioEngine::INVALID_AUDIO_ID;
     }
 }
 
@@ -49,12 +53,81 @@ void AudioManager::deleteInstance() {
 }
 
 
+// オーディオ管理ファイルを読み込む
+bool AudioManager::readAudioListFile(const std::string fileName) {
+
+    // Resourceの中にあるファイルを読み込む
+    // ファイル読み込み
+    std::string strData = FileUtils::getInstance()->getStringFromFile(fileName);
+
+    rapidjson::Document doc;
+    doc.Parse<rapidjson::kParseDefaultFlags>(strData.c_str());
+
+    if (doc.HasParseError()) {
+        // 解析エラー
+        log("JSON error : %u", doc.GetParseError());
+        return false;
+    }
+
+    if (doc.IsObject()) {
+
+        log("%s", strData.c_str());
+
+        // 初期化
+        _bgmList.clear();
+        _seList.clear();
+
+        // BGM
+        rapidjson::Value& bgms = doc["BGM"];
+
+        // キーと値をリストに登録する
+        for (rapidjson::Value::ConstMemberIterator it = bgms.MemberBegin(); it != bgms.MemberEnd(); it++) {
+            std::string key = it->name.GetString();
+            const rapidjson::Value& value = it->value;
+            if (value.GetType() == rapidjson::kStringType) {
+                _bgmList[key] = value.GetString();
+            }
+        }
+
+        // SE
+        rapidjson::Value& ses = doc["SE"];
+        // キーと値をリストに登録する
+        for (rapidjson::Value::ConstMemberIterator it = ses.MemberBegin(); it != ses.MemberEnd(); it++) {
+            std::string key = it->name.GetString();
+            const rapidjson::Value& value = it->value;
+            if (value.GetType() == rapidjson::kStringType) {
+                _seList[key] = value.GetString();
+            }
+        }
+
+        // 現在のファイルをセット
+        _audioListFile = fileName;
+
+        return true;
+    }
+    return false;
+}
+
+
 // 端末ごとに読み込む拡張子を変えて、そのファイル名を返す
-std::string AudioManager::getFileName(const std::string baseName) {
+std::string AudioManager::getFileName(std::string baseName, AudioType type) {
 
     auto platform = Application::getInstance()->getTargetPlatform();
 
     std::string ext = ".wav";               // 拡張子
+
+    // オーディオ管理ファイルを使う場合、キーからファイル名を取得する
+    if (_audioListFile != "") {
+        if (type == AudioType::BGM) {
+            if (_bgmList.count(baseName) != 0) {
+                baseName = _bgmList[baseName];
+            }
+        } else if (type == AudioType::SE) {
+            if (_seList.count(baseName) != 0) {
+                baseName = _seList[baseName];
+            }
+        }
+    }
 
     // すでに拡張子(.～)が含まれているならそのまま返す
     if (baseName.find_last_of(".") != std::string::npos) {
@@ -95,7 +168,7 @@ std::string AudioManager::getFileName(const std::string baseName) {
     }
 
     // それでも見つからなければ空文字を返して、その先でエラーとする
-    log("file not found %s.", baseName);
+    log("file not found %s.", baseName.c_str());
     return baseName;
 
 }
@@ -104,7 +177,11 @@ std::string AudioManager::getFileName(const std::string baseName) {
 // 拡張子を取得する
 std::string AudioManager::getExtension(const std::string fileName) {
     auto chars = strchr(fileName.c_str(), '.');
-    return StringUtils::toString(chars);
+    if (chars != nullptr) {
+        return StringUtils::toString(chars);
+    }
+
+    return "";
 }
 
 
@@ -115,7 +192,7 @@ std::string AudioManager::getExtension(const std::string fileName) {
 // BGMのPreLoad
 void AudioManager::preloadBgm(const std::string baseName) {
 
-    std::string fileName = getFileName(baseName);
+    std::string fileName = getFileName(baseName, AudioType::BGM);
     if (fileName == "") {
         return;
     }
@@ -138,13 +215,13 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
 
     int soundId = AudioEngine::INVALID_AUDIO_ID;
 
-    std::string fileName = getFileName(baseName);
+    std::string fileName = getFileName(baseName, AudioType::BGM);
     if (fileName == "") {
         return soundId;
     }
 
     // Windowsで.wav, .oggならSimpleAudioEngineを使用する
-    auto isWav = (getExtension(fileName).compare(".wav") || getExtension(fileName).compare(".ogg")) == 0 ? 1 : 0;
+    auto isWav = (getExtension(fileName).compare(".wav") == 0 || getExtension(fileName).compare(".ogg") == 0) ? 1 : 0;
 
     Application::Platform platform = Application::getInstance()->getTargetPlatform();
     if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
@@ -182,7 +259,7 @@ void AudioManager::stopBgm(float fadeTime /*= 0*/) {
 // 効果音のPreLoad
 void AudioManager::preloadSe(const std::string baseName) {
 
-    std::string fileName = getFileName(baseName);
+    std::string fileName = getFileName(baseName, AudioType::SE);
     if (fileName == "") {
         return;
     }
@@ -202,7 +279,7 @@ void AudioManager::preloadSe(const std::string baseName) {
 // 効果音のキャッシュを解放する
 void AudioManager::releaseSe(const std::string baseName) {
 
-    std::string fileName = getFileName(baseName);
+    std::string fileName = getFileName(baseName, AudioType::SE);
     if (fileName == "") {
         return;
     }
@@ -225,7 +302,7 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
     int soundId = AudioEngine::INVALID_AUDIO_ID;
     bool chunkFlag = false;
     
-    std::string fileName = getFileName(baseName);
+    std::string fileName = getFileName(baseName, AudioType::SE);
     if (fileName == "") {
         return soundId;
     }

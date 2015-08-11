@@ -184,6 +184,11 @@ std::string AudioManager::getExtension(const std::string fileName) {
     return "";
 }
 
+// AudioEngine全てのキャッシュを削除する
+void AudioManager::releaseAll() {
+    AudioEngine::uncacheAll();
+}
+
 
 //===================
 // BGM
@@ -241,15 +246,23 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
 }
 
 // BGMを停止する
-void AudioManager::stopBgm(float fadeTime /*= 0*/) {
+void AudioManager::stopBgm(float fadeTime /*= 0*/, bool release /* = true */) {
 
     // Windows版wav用にこれも実行しておく
     CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic();
     AudioEngine::stop(_bgmId);
 
+    // キャッシュ解放
+    if (release == true) {
+        releaseBgm();
+    }
+}
+
+// BGMのキャシュを解放する
+void AudioManager::releaseBgm() {
+    AudioEngine::uncache(_bgmFileName);
     _bgmId = AudioEngine::INVALID_AUDIO_ID;
     _bgmFileName = "";
-
 }
 
 //===================
@@ -273,26 +286,6 @@ void AudioManager::preloadSe(const std::string baseName) {
     } else {
         // 音量0で再生し、キャッシュさせる
         playSe(fileName, false, 0);
-    }
-}
-
-// 効果音のキャッシュを解放する
-void AudioManager::releaseSe(const std::string baseName) {
-
-    std::string fileName = getFileName(baseName, AudioType::SE);
-    if (fileName == "") {
-        return;
-    }
-
-    // Windowsで.wavならSimpleAudioEngineを使用する
-    auto isWav = getExtension(fileName).compare(".wav") == 0 ? 1 : 0;
-
-    Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->unloadEffect(fileName.c_str());
-    } else {
-        // iOSでの解放
-        AudioEngine::uncache(fileName);
     }
 }
 
@@ -357,5 +350,24 @@ void AudioManager::stopSe(int soundId) {
     CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(soundId);
     
     AudioEngine::stop(soundId);
+}
 
+// 効果音のキャッシュを解放する
+void AudioManager::releaseSe(const std::string baseName) {
+
+    std::string fileName = getFileName(baseName, AudioType::SE);
+    if (fileName == "") {
+        return;
+    }
+
+    // Windowsで.wavならSimpleAudioEngineを使用する
+    auto isWav = getExtension(fileName).compare(".wav") == 0 ? 1 : 0;
+
+    Application::Platform platform = Application::getInstance()->getTargetPlatform();
+    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->unloadEffect(fileName.c_str());
+    } else {
+        // iOSでの解放
+        AudioEngine::uncache(fileName);
+    }
 }

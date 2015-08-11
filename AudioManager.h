@@ -58,19 +58,21 @@ public:
     // オーディオ管理ファイルを読み込む
     bool readAudioListFile(const std::string fileName);
 	
+    void releaseAll();
+
     void preloadBgm(const std::string baseName);
-    void releaseBgm(const std::string baseName);
     int playBgm(const std::string baseName, float fadeTime = 0, bool roop = true);
     int playBgm(const std::string baseName, float fadeTime, bool roop, float volume);
-    void stopBgm(float fadeTime = 0);
+    void stopBgm(float fadeTime = 0, bool release = true);
+    void releaseBgm();
 
     void preloadSe(const std::string baseName);
-    void releaseSe(const std::string baseName);
     int playSe(const std::string baseName, int chunkNo);
     int playSe(const std::string baseName, bool roop = false);
     int playSe(const std::string baseName, int chunkNo, bool roop, float volume);
     int playSe(const std::string baseName, bool roop, float volume);
     void stopSe(int soundId);
+    void releaseSe(const std::string baseName);
 
 };
 

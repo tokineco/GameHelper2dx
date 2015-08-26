@@ -42,12 +42,13 @@ private:
     //==========================
 
     // 環境に応じて拡張子付きファイル名に変換する
-    std::string getFileName(std::string baseName, AudioType type);
+    std::string getFileName(AudioType type, std::string baseName);
 
     // 拡張子を取得する
     std::string getExtension(const std::string fileName);
    
-
+    // SimpleEngineを使うかどうか
+    bool isSimpleAudioEngine(AudioType type, const std::string fileName);
     
 public:
 
@@ -63,6 +64,8 @@ public:
     void preloadBgm(const std::string baseName);
     int playBgm(const std::string baseName, float fadeTime = 0, bool roop = true);
     int playBgm(const std::string baseName, float fadeTime, bool roop, float volume);
+    void pauseBgm(float fadeTime = 0);
+    void resumeBgm(float fadeTime = 0);
     void stopBgm(float fadeTime = 0, bool release = true);
     void releaseBgm();
 

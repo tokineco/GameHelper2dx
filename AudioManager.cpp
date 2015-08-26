@@ -1,10 +1,10 @@
-// BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
-// SE: Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
+// BGM: iOS, Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
+// SE: iOS, Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
 
 #pragma execution_character_set("utf-8")
 
-#include "SimpleAudioEngine.h"              // Windows-wav
-#include "audio/include/AudioEngine.h"      // iOS, Android
+#include "SimpleAudioEngine.h"              // iOS, Windows-ogg, wav
+#include "audio/include/AudioEngine.h"      // Android
 #include "json/rapidjson.h"
 #include "json/document.h"
 
@@ -110,7 +110,7 @@ bool AudioManager::readAudioListFile(const std::string fileName) {
 
 
 // 端末ごとに読み込む拡張子を変えて、そのファイル名を返す
-std::string AudioManager::getFileName(std::string baseName, AudioType type) {
+std::string AudioManager::getFileName(AudioType type, std::string baseName) {
 
     auto platform = Application::getInstance()->getTargetPlatform();
 
@@ -184,6 +184,28 @@ std::string AudioManager::getExtension(const std::string fileName) {
     return "";
 }
 
+// SimpleEngineを使うかどうか
+bool AudioManager::isSimpleAudioEngine(AudioType type, const std::string fileName) {
+
+    bool isWav = false;
+
+    if (type == AudioType::BGM) {
+        isWav = (getExtension(fileName).compare(".wav") || getExtension(fileName).compare(".ogg")) == 0 ? 1 : 0;
+    } else {
+        isWav = (getExtension(fileName).compare(".wav") == 0) ? 1 : 0;
+    }
+
+    Application::Platform platform = Application::getInstance()->getTargetPlatform();
+    //if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
+    if (platform == Application::Platform::OS_IPHONE ||
+        platform == Application::Platform::OS_IPAD ||
+        (platform == Application::Platform::OS_WINDOWS && isWav == 1)) {
+        return true;
+    }
+
+    return false;
+}
+
 // AudioEngine全てのキャッシュを削除する
 void AudioManager::releaseAll() {
     AudioEngine::uncacheAll();
@@ -197,21 +219,17 @@ void AudioManager::releaseAll() {
 // BGMのPreLoad
 void AudioManager::preloadBgm(const std::string baseName) {
 
-    std::string fileName = getFileName(baseName, AudioType::BGM);
+    std::string fileName = getFileName(AudioType::BGM, baseName);
     if (fileName == "") {
         return;
     }
 
-    // Windowsで.wav, .oggならSimpleAudioEngineを使用する
-    auto isWav = (getExtension(fileName).compare(".wav") || getExtension(fileName).compare(".ogg")) == 0 ? 1 : 0;
-
-    Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
+    if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic(fileName.c_str());
     } else {
-        // 音量0で再生し、キャッシュさせる
-        playBgm(fileName, false);
-        stopBgm();
+        //// 音量0で再生し、キャッシュさせる
+        //playBgm(fileName, false);
+        //stopBgm();
     }
 }
 
@@ -220,16 +238,12 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
 
     int soundId = AudioEngine::INVALID_AUDIO_ID;
 
-    std::string fileName = getFileName(baseName, AudioType::BGM);
+    std::string fileName = getFileName(AudioType::BGM, baseName);
     if (fileName == "") {
         return soundId;
     }
 
-    // Windowsで.wav, .oggならSimpleAudioEngineを使用する
-    auto isWav = (getExtension(fileName).compare(".wav") == 0 || getExtension(fileName).compare(".ogg") == 0) ? 1 : 0;
-
-    Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
+    if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(fileName.c_str(), roop);
     } else {
         if (_bgmFileName == baseName && AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PLAYING) {
@@ -243,6 +257,22 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
         _bgmFileName = baseName;
     }
     return _bgmId;
+}
+
+// BGMを一時停止する
+void AudioManager::pauseBgm(float fadeTime /*= 0*/) {
+
+    // Windows版wav用にこれも実行しておく
+    CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
+    AudioEngine::pause(_bgmId);
+}
+
+// BGMをリジューム再生する
+void AudioManager::resumeBgm(float fadeTime /*=0*/) {
+
+    // Windows版wav用にこれも実行しておく
+    CocosDenshion::SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
+    AudioEngine::resume(_bgmId);
 }
 
 // BGMを停止する
@@ -272,20 +302,16 @@ void AudioManager::releaseBgm() {
 // 効果音のPreLoad
 void AudioManager::preloadSe(const std::string baseName) {
 
-    std::string fileName = getFileName(baseName, AudioType::SE);
+    std::string fileName = getFileName(AudioType::SE, baseName);
     if (fileName == "") {
         return;
     }
 
-    // Windowsで.wavならSimpleAudioEngineを使用する
-    auto isWav = getExtension(fileName).compare(".wav") == 0 ? 1 : 0;
-
-    Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
+    if (isSimpleAudioEngine(AudioType::SE, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect(fileName.c_str());
     } else {
-        // 音量0で再生し、キャッシュさせる
-        playSe(fileName, false, 0);
+        //// 音量0で再生し、キャッシュさせる
+        //playSe(fileName, false, 0);
     }
 }
 
@@ -295,7 +321,7 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
     int soundId = AudioEngine::INVALID_AUDIO_ID;
     bool chunkFlag = false;
     
-    std::string fileName = getFileName(baseName, AudioType::SE);
+    std::string fileName = getFileName(AudioType::SE, baseName);
     if (fileName == "") {
         return soundId;
     }
@@ -308,11 +334,7 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
         this->stopSe(_chunk[chunkNo]);
     }
 
-    // Windowsで.wavならSimpleAudioEngineを使用する
-    auto isWav = getExtension(fileName).compare(".wav") == 0 ? 1 : 0;
-
-    Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
+    if (isSimpleAudioEngine(AudioType::SE, fileName)) {
         soundId = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(fileName.c_str(), roop);
     } else {
         soundId = AudioEngine::play2d(fileName, roop, volume);
@@ -355,16 +377,12 @@ void AudioManager::stopSe(int soundId) {
 // 効果音のキャッシュを解放する
 void AudioManager::releaseSe(const std::string baseName) {
 
-    std::string fileName = getFileName(baseName, AudioType::SE);
+    std::string fileName = getFileName(AudioType::SE, baseName);
     if (fileName == "") {
         return;
     }
 
-    // Windowsで.wavならSimpleAudioEngineを使用する
-    auto isWav = getExtension(fileName).compare(".wav") == 0 ? 1 : 0;
-
-    Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
+    if (isSimpleAudioEngine(AudioType::SE, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->unloadEffect(fileName.c_str());
     } else {
         // iOSでの解放

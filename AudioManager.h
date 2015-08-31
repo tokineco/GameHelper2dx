@@ -14,7 +14,7 @@ private:
         BGM = 0,
         SE = 1
     };
-	
+
 	AudioManager();
 	static AudioManager* _instance;
 
@@ -35,9 +35,9 @@ private:
     CC_SYNTHESIZE(std::string, _audioListFile, AudioListFile);
 
     // BGM音量
-    CC_SYNTHESIZE(float, _bgmVolume, BgmVolume);
+    float  _bgmVolume;
     // SE音量
-    CC_SYNTHESIZE(float, _seVolume, SeVolume);
+    float _seVolume;
 
     //==========================
 
@@ -46,10 +46,10 @@ private:
 
     // 拡張子を取得する
     std::string getExtension(const std::string fileName);
-   
+
     // SimpleEngineを使うかどうか
     bool isSimpleAudioEngine(AudioType type, const std::string fileName);
-    
+
 public:
 
 	~AudioManager();
@@ -58,7 +58,7 @@ public:
 
     // オーディオ管理ファイルを読み込む
     bool readAudioListFile(const std::string fileName);
-	
+
     void releaseAll();
 
     void preloadBgm(const std::string baseName);
@@ -67,6 +67,7 @@ public:
     void pauseBgm(float fadeTime = 0);
     void resumeBgm(float fadeTime = 0);
     void stopBgm(float fadeTime = 0, bool release = true);
+    void setBgmVolume(float volume);
     void releaseBgm();
 
     void preloadSe(const std::string baseName);
@@ -75,6 +76,7 @@ public:
     int playSe(const std::string baseName, int chunkNo, bool roop, float volume);
     int playSe(const std::string baseName, bool roop, float volume);
     void stopSe(int soundId);
+    void setSeVolume(float volume);
     void releaseSe(const std::string baseName);
 
 };

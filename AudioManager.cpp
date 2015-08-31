@@ -34,7 +34,7 @@ AudioManager::~AudioManager() {
 
 // 初期化
 AudioManager* AudioManager::getInstance() {
-	
+
 	if (_instance == NULL) {
         _instance = new AudioManager();
 	}
@@ -288,6 +288,13 @@ void AudioManager::stopBgm(float fadeTime /*= 0*/, bool release /* = true */) {
     }
 }
 
+// BGMの音量を変更する
+void AudioManager::setBgmVolume(float volume) {
+    _bgmVolume = volume;
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(_bgmVolume);
+    AudioEngine::setVolume(_bgmId, _bgmVolume);
+}
+
 // BGMのキャシュを解放する
 void AudioManager::releaseBgm() {
     AudioEngine::uncache(_bgmFileName);
@@ -317,19 +324,19 @@ void AudioManager::preloadSe(const std::string baseName) {
 
 // 効果音を再生する
 int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, float volume) {
-    
+
     int soundId = AudioEngine::INVALID_AUDIO_ID;
     bool chunkFlag = false;
-    
+
     std::string fileName = getFileName(AudioType::SE, baseName);
     if (fileName == "") {
         return soundId;
     }
-    
+
     // チャンクが指定されていたら
     if (chunkNo >= 0 && chunkNo < sizeof(_chunk) / sizeof(_chunk[0])) {
         chunkFlag = true;
-        
+
         // 指定チャンクの再生中の音を停止
         this->stopSe(_chunk[chunkNo]);
     }
@@ -339,18 +346,18 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
     } else {
         soundId = AudioEngine::play2d(fileName, roop, volume);
     }
-    
+
     if (chunkFlag) {
         // チャンクにSoundIdを登録
         _chunk[chunkNo] = soundId;
     }
 
     return soundId;
-    
+
 }
 
 int AudioManager::playSe(const std::string baseName, bool roop, float volume) {
-    
+
     return this->playSe(baseName, -1, roop, volume);
 }
 
@@ -370,8 +377,15 @@ void AudioManager::stopSe(int soundId) {
 
     // Windows版wav用にこれも実行しておく
     CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(soundId);
-    
+
     AudioEngine::stop(soundId);
+}
+
+// 効果音の音量を変更する
+void AudioManager::setSeVolume(float volume) {
+    _seVolume = volume;
+    CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(_seVolume);
+    //AudioEngine::setVolume(soundId, _seVolume);
 }
 
 // 効果音のキャッシュを解放する

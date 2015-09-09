@@ -44,9 +44,6 @@ private:
     // 環境に応じて拡張子付きファイル名に変換する
     std::string getFileName(AudioType type, std::string baseName);
 
-    // 拡張子を取得する
-    std::string getExtension(const std::string fileName);
-
     // SimpleEngineを使うかどうか
     bool isSimpleAudioEngine(AudioType type, const std::string fileName);
 

@@ -173,26 +173,17 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
 
 }
 
-
-// 拡張子を取得する
-std::string AudioManager::getExtension(const std::string fileName) {
-    auto chars = strchr(fileName.c_str(), '.');
-    if (chars != nullptr) {
-        return StringUtils::toString(chars);
-    }
-
-    return "";
-}
-
 // SimpleEngineを使うかどうか
 bool AudioManager::isSimpleAudioEngine(AudioType type, const std::string fileName) {
 
     bool isWav = false;
 
+    auto fu = FileUtils::getInstance();
+
     if (type == AudioType::BGM) {
-        isWav = (getExtension(fileName).compare(".wav") || getExtension(fileName).compare(".ogg")) == 0 ? 1 : 0;
+        isWav = (fu->getFileExtension(fileName).compare(".wav") || fu->getFileExtension(fileName).compare(".ogg")) == 0 ? 1 : 0;
     } else {
-        isWav = (getExtension(fileName).compare(".wav") == 0) ? 1 : 0;
+        isWav = (fu->getFileExtension(fileName).compare(".wav") == 0) ? 1 : 0;
     }
 
     Application::Platform platform = Application::getInstance()->getTargetPlatform();
@@ -227,10 +218,9 @@ void AudioManager::preloadBgm(const std::string baseName) {
     if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic(fileName.c_str());
     } else {
-        //// 音量0で再生し、キャッシュさせる
-        //playBgm(fileName, false);
-        //stopBgm();
+        AudioEngine::preload(fileName);
     }
+
 }
 
 // BGMの再生
@@ -317,8 +307,7 @@ void AudioManager::preloadSe(const std::string baseName) {
     if (isSimpleAudioEngine(AudioType::SE, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect(fileName.c_str());
     } else {
-        //// 音量0で再生し、キャッシュさせる
-        //playSe(fileName, false, 0);
+        AudioEngine::preload(fileName);
     }
 }
 
@@ -399,7 +388,6 @@ void AudioManager::releaseSe(const std::string baseName) {
     if (isSimpleAudioEngine(AudioType::SE, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->unloadEffect(fileName.c_str());
     } else {
-        // iOSでの解放
         AudioEngine::uncache(fileName);
     }
 }

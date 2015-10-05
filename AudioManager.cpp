@@ -13,13 +13,20 @@
 USING_NS_CC;
 using namespace experimental;
 
-AudioManager* AudioManager::_instance = NULL;
+AudioManager* AudioManager::_instance = nullptr;
+cocos2d::Scheduler* AudioManager::_scheduler = nullptr;
 
 // コンストラクタ
 AudioManager::AudioManager()
     : _audioListFile("")
     , _bgmVolume(0.5f)
     , _seVolume(0.6f)
+    , _fadeCondition(FadeType::NONE)
+    , _bgmFadeVolumeNow(0)
+    , _bgmFadeVolumeFrom(0)
+    , _bgmFadeVolumeTo(0)
+    , _bgmFadeTime(0)
+    , _stopBgmReleaseFlg(false)
 {
     // チャンク配列の初期化
     for(int i=0; i < sizeof(_chunk) / sizeof(_chunk[0]); i++) {
@@ -29,14 +36,19 @@ AudioManager::AudioManager()
 
 // デストラクタ
 AudioManager::~AudioManager() {
-
+    CC_SAFE_RELEASE_NULL(_scheduler);
 }
 
 // 初期化
 AudioManager* AudioManager::getInstance() {
 
-	if (_instance == NULL) {
+    if (_instance == nullptr) {
         _instance = new AudioManager();
+
+        // スケジューラをインスタンスに追加し、updateを呼び出せるようにする
+        _scheduler = Director::getInstance()->getScheduler();
+        _scheduler->retain();
+        _scheduler->scheduleUpdate(_instance, 0, false);
 	}
 
 	return _instance;
@@ -45,11 +57,11 @@ AudioManager* AudioManager::getInstance() {
 // 削除する際に使用
 void AudioManager::deleteInstance() {
 
-	if (_instance != NULL) {
+    if (_instance != nullptr) {
 		delete _instance;
 	}
 
-	_instance = NULL;
+    _instance = nullptr;
 }
 
 
@@ -107,7 +119,6 @@ bool AudioManager::readAudioListFile(const std::string fileName) {
     }
     return false;
 }
-
 
 // 端末ごとに読み込む拡張子を変えて、そのファイル名を返す
 std::string AudioManager::getFileName(AudioType type, std::string baseName) {
@@ -202,6 +213,59 @@ void AudioManager::releaseAll() {
     AudioEngine::uncacheAll();
 }
 
+// 毎フレーム実行
+void AudioManager::update(float dt) {
+
+    // フェードイン、アウトを実行する
+    switch (_fadeCondition) {
+        case FadeType::FADE_IN:
+        case FadeType::FADE_IN_RESUME:
+            // 0除算回避
+            if (_bgmFadeTime == 0) {
+                _bgmFadeTime = 0.01f;
+            }
+            // dt時間後の増分ボリュームを求める。 _bgmVolume:_bgmFadeTime = dV : dt
+            _bgmFadeVolumeNow += (dt * (_bgmFadeVolumeTo - _bgmFadeVolumeFrom)) / _bgmFadeTime;
+
+            if (_bgmFadeVolumeNow >= _bgmFadeVolumeTo) {
+                _bgmFadeVolumeNow = _bgmFadeVolumeTo;
+                _bgmFadeVolumeFrom = _bgmFadeVolumeTo;
+                _fadeCondition = FadeType::NONE;
+            }
+
+            this->setBgmVolume(_bgmFadeVolumeNow, false);
+            break;
+        case FadeType::FADE_OUT:
+        case FadeType::FADE_OUT_PAUSE:
+            // 0除算回避
+            if (_bgmFadeTime == 0) {
+                _bgmFadeTime = 0.01f;
+            }
+            // dt時間後の減分ボリュームを求める。 _bgmVolume:_bgmFadeTime = dV : dt
+            _bgmFadeVolumeNow += (dt * (_bgmFadeVolumeTo - _bgmFadeVolumeFrom)) / _bgmFadeTime;
+
+            if (_bgmFadeVolumeNow <= _bgmFadeVolumeTo) {
+                _bgmFadeVolumeNow = _bgmFadeVolumeTo;
+                _bgmFadeVolumeFrom = _bgmFadeVolumeTo;
+                _fadeCondition = FadeType::NONE;
+
+                if (_fadeCondition == FadeType::FADE_OUT) {
+                    // stopBgmを実行
+                    stopBgmEngine(_stopBgmReleaseFlg);
+                } else if (_fadeCondition == FadeType::FADE_OUT_PAUSE) {
+                    // pauseBgmを実行
+                    pauseBgmEngine();
+                }
+            }
+
+            this->setBgmVolume(_bgmFadeVolumeNow, false);
+            break;
+        default:
+            break;
+    }
+}
+
+
 
 //===================
 // BGM
@@ -233,6 +297,22 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
         return soundId;
     }
 
+    // 前回のBGMを停止
+    stopBgm();
+
+    // フェード指定の場合
+    if (fadeTime != 0) {
+        _fadeCondition = FadeType::FADE_IN;
+        _bgmFadeVolumeNow = 0;
+        _bgmFadeVolumeFrom = 0;
+        _bgmFadeTime = fadeTime;
+    } else {
+        _fadeCondition = FadeType::NONE;
+        _bgmFadeVolumeNow = _bgmVolume;
+    }
+    _bgmFadeVolumeTo = _bgmVolume;
+
+
     if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(fileName.c_str(), roop);
     } else {
@@ -240,8 +320,6 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
             // 前回と同じファイル名で、再生中の場合は無視する
             return _bgmId;
         }
-        // 前回のBGMを停止
-        stopBgm();
 
         _bgmId = AudioEngine::play2d(fileName, roop, _bgmVolume);
         _bgmFileName = baseName;
@@ -252,6 +330,27 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
 // BGMを一時停止する
 void AudioManager::pauseBgm(float fadeTime /*= 0*/) {
 
+    _bgmFadeVolumeTo = 0;
+
+    if (fadeTime != 0) {
+        // フェード指定の場合
+        _fadeCondition = FadeType::FADE_OUT_PAUSE;
+        _bgmFadeVolumeNow = _bgmVolume;
+        _bgmFadeVolumeFrom = _bgmVolume;
+        _bgmFadeTime = fadeTime;
+    } else {
+        // フェードなしの場合
+        _fadeCondition = FadeType::NONE;
+        _bgmFadeVolumeNow = 0;
+
+        pauseBgmEngine();
+    }
+    
+}
+
+// pauseBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
+void AudioManager::pauseBgmEngine() {
+
     // Windows版wav用にこれも実行しておく
     CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
     AudioEngine::pause(_bgmId);
@@ -259,6 +358,18 @@ void AudioManager::pauseBgm(float fadeTime /*= 0*/) {
 
 // BGMをリジューム再生する
 void AudioManager::resumeBgm(float fadeTime /*=0*/) {
+
+    // フェード指定の場合
+    if (fadeTime != 0) {
+        _fadeCondition = FadeType::FADE_IN_RESUME;
+        _bgmFadeVolumeNow = 0;
+        _bgmFadeVolumeFrom = 0;
+        _bgmFadeTime = fadeTime;
+    } else {
+        _fadeCondition = FadeType::NONE;
+        _bgmFadeVolumeNow = _bgmVolume;
+    }
+    _bgmFadeVolumeTo = _bgmVolume;
 
     // Windows版wav用にこれも実行しておく
     CocosDenshion::SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
@@ -268,21 +379,48 @@ void AudioManager::resumeBgm(float fadeTime /*=0*/) {
 // BGMを停止する
 void AudioManager::stopBgm(float fadeTime /*= 0*/, bool release /* = true */) {
 
+    _bgmFadeVolumeTo = 0;
+
+    if (fadeTime != 0) {
+        // フェード指定の場合
+        _fadeCondition = FadeType::FADE_OUT;
+        _bgmFadeVolumeNow = _bgmVolume;
+        _bgmFadeVolumeFrom = _bgmVolume;
+        _bgmFadeTime = fadeTime;
+    } else {
+        // フェードなしの場合
+        _fadeCondition = FadeType::NONE;
+        _bgmFadeVolumeNow = 0;
+
+        stopBgmEngine(release);
+    }
+}
+
+// stopBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
+void AudioManager::stopBgmEngine(bool release /* = true */) {
+
     // Windows版wav用にこれも実行しておく
-    CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic();
+    CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic(release);
     AudioEngine::stop(_bgmId);
 
     // キャッシュ解放
     if (release == true) {
         releaseBgm();
     }
+
 }
 
+
 // BGMの音量を変更する
-void AudioManager::setBgmVolume(float volume) {
-    _bgmVolume = volume;
-    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(_bgmVolume);
-    AudioEngine::setVolume(_bgmId, _bgmVolume);
+void AudioManager::setBgmVolume(float volume, bool save /* = true */) {
+
+    // 変数保持フラグがonの場合は変数を切り替える
+    if (save) {
+        _bgmVolume = volume;
+    }
+
+    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(volume);
+    AudioEngine::setVolume(_bgmId, volume);
 }
 
 // BGMのキャシュを解放する

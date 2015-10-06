@@ -281,6 +281,8 @@ void AudioManager::preloadBgm(const std::string baseName) {
 
     if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic(fileName.c_str());
+        // iOSでなぜかBGMが再生されてしまうのを防ぐため、stopしておく
+        CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic();
     } else {
         AudioEngine::preload(fileName);
     }

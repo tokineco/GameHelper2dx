@@ -1,10 +1,10 @@
-// BGM: iOS, Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
-// SE: iOS, Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
+// BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
+// SE : Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
 
 #pragma execution_character_set("utf-8")
 
-#include "SimpleAudioEngine.h"              // iOS, Windows-ogg, wav
-#include "audio/include/AudioEngine.h"      // Android
+#include "SimpleAudioEngine.h"              // Windows-ogg, wav
+#include "audio/include/AudioEngine.h"      // iOS, Android
 #include "json/rapidjson.h"
 #include "json/document.h"
 
@@ -198,10 +198,7 @@ bool AudioManager::isSimpleAudioEngine(AudioType type, const std::string fileNam
     }
 
     Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    //if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
-    if (platform == Application::Platform::OS_IPHONE ||
-        platform == Application::Platform::OS_IPAD ||
-        (platform == Application::Platform::OS_WINDOWS && isWav == 1)) {
+    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
         return true;
     }
 

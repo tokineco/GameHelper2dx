@@ -9,5 +9,6 @@ Copyright (c) 2015 Hiroshi Fukuda(tokineco)
 #include "cocos2d.h"
 #include "AudioManager.h"
 #include "Converter.h"
+#include "MathHelper.h"
 
 #endif /* defined(__GAMEHELPER2DX__) */

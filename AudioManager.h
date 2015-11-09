@@ -89,6 +89,8 @@ public:
     // BGMの音量を変更する
     // Arg2 - save : 変数_bgmVolumeに保存する場合はtrue
     void setBgmVolume(float volume, bool save = true);
+    // BGMの音量を取得する
+    float getBgmVolume();
     // BGMのキャシュを解放する
     void releaseBgm();
 
@@ -104,6 +106,8 @@ public:
     void stopSe(int soundId);
     // 効果音の音量を変更する
     void setSeVolume(float volume);
+    // 効果音の音量を取得する
+    float getSeVolume();
     // 効果音のキャッシュを解放する
     void releaseSe(const std::string baseName);
 

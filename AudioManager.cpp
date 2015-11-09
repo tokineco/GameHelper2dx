@@ -422,6 +422,11 @@ void AudioManager::setBgmVolume(float volume, bool save /* = true */) {
     AudioEngine::setVolume(_bgmId, volume);
 }
 
+// 効果音の音量を取得する
+float AudioManager::getBgmVolume() {
+    return _bgmVolume;
+}
+
 // BGMのキャシュを解放する
 void AudioManager::releaseBgm() {
     AudioEngine::uncache(_bgmFileName);
@@ -512,6 +517,11 @@ void AudioManager::setSeVolume(float volume) {
     _seVolume = volume;
     CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(_seVolume);
     //AudioEngine::setVolume(soundId, _seVolume);
+}
+
+// 効果音の音量を取得する
+float AudioManager::getSeVolume() {
+    return _seVolume;
 }
 
 // 効果音のキャッシュを解放する

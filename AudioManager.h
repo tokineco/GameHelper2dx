@@ -86,6 +86,8 @@ public:
     // BGMを停止する
     // Arg2 - release : キャッシュを破棄する場合はtrue
     void stopBgm(float fadeTime = 0, bool release = true);
+    // BGMが再生されているかどうか
+    bool isPlayingBgm();
     // BGMの音量を変更する
     // Arg2 - save : 変数_bgmVolumeに保存する場合はtrue
     void setBgmVolume(float volume, bool save = true);
@@ -110,6 +112,9 @@ public:
     float getSeVolume();
     // 効果音のキャッシュを解放する
     void releaseSe(const std::string baseName);
+
+    // AudioEngineを解放する
+    void endAudioEngine();
 
 private:
     // 環境に応じて拡張子付きファイル名に変換する

@@ -26,7 +26,7 @@ AudioManager::AudioManager()
     , _bgmFadeVolumeFrom(0)
     , _bgmFadeVolumeTo(0)
     , _bgmFadeTime(0)
-    , _stopBgmReleaseFlg(false)
+    , _stopBgmReleaseFlg(true)
 {
     // チャンク配列の初期化
     for(int i=0; i < sizeof(_chunk) / sizeof(_chunk[0]); i++) {
@@ -151,10 +151,21 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
 
     switch (platform) {
         case cocos2d::ApplicationProtocol::Platform::OS_WINDOWS:
+
+            // mp3> ogg > wav
+            if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
+                ext = ".mp3";
+            }
+            else if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
+                ext = ".ogg";
+            }
+            break;
         case cocos2d::ApplicationProtocol::Platform::OS_ANDROID:
 
-            // ogg > mp3 > wav
-            if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
+            // m4a > ogg > mp3 > wav
+            if (FileUtils::getInstance()->isFileExist(baseName + ".m4a")) {
+                ext = ".m4a";
+            } else if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
                 ext = ".ogg";
             } else if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
                 ext = ".mp3";
@@ -163,8 +174,10 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
         case cocos2d::ApplicationProtocol::Platform::OS_IPHONE:
         case cocos2d::ApplicationProtocol::Platform::OS_IPAD:
 
-            // caf > mp3 > wav
-            if (FileUtils::getInstance()->isFileExist(baseName + ".caf")) {
+            // m4a > caf > mp3 > wav
+            if (FileUtils::getInstance()->isFileExist(baseName + ".m4a")) {
+                ext = ".m4a";
+            } else if (FileUtils::getInstance()->isFileExist(baseName + ".caf")) {
                 ext = ".caf";
             } else if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
                 ext = ".mp3";
@@ -244,15 +257,16 @@ void AudioManager::update(float dt) {
             if (_bgmFadeVolumeNow <= _bgmFadeVolumeTo) {
                 _bgmFadeVolumeNow = _bgmFadeVolumeTo;
                 _bgmFadeVolumeFrom = _bgmFadeVolumeTo;
-                _fadeCondition = FadeType::NONE;
 
                 if (_fadeCondition == FadeType::FADE_OUT) {
                     // stopBgmを実行
-                    stopBgmEngine(_stopBgmReleaseFlg);
+                    stopBgm(0, _stopBgmReleaseFlg);
                 } else if (_fadeCondition == FadeType::FADE_OUT_PAUSE) {
                     // pauseBgmを実行
-                    pauseBgmEngine();
+                    pauseBgm(0);
                 }
+
+                _fadeCondition = FadeType::NONE;
             }
 
             this->setBgmVolume(_bgmFadeVolumeNow, false);
@@ -386,6 +400,7 @@ void AudioManager::stopBgm(float fadeTime /*= 0*/, bool release /* = true */) {
         _bgmFadeVolumeNow = _bgmVolume;
         _bgmFadeVolumeFrom = _bgmVolume;
         _bgmFadeTime = fadeTime;
+        _stopBgmReleaseFlg = release;
     } else {
         // フェードなしの場合
         _fadeCondition = FadeType::NONE;
@@ -403,12 +418,31 @@ void AudioManager::stopBgmEngine(bool release /* = true */) {
     AudioEngine::stop(_bgmId);
 
     // キャッシュ解放
-    if (release == true) {
+    if (release) {
         releaseBgm();
     }
 
+    _bgmId = AudioEngine::INVALID_AUDIO_ID;
+    _bgmFileName = "";
+
 }
 
+// BGMが再生されているかどうか
+bool AudioManager::isPlayingBgm() {
+
+    std::string fileName = getFileName(AudioType::BGM, _bgmFileName);
+
+    if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
+        return CocosDenshion::SimpleAudioEngine::getInstance()->isBackgroundMusicPlaying();
+    } else {
+        AudioEngine::AudioState state = AudioEngine::getState(_bgmId);
+        if (state == AudioEngine::AudioState::PLAYING) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 // BGMの音量を変更する
 void AudioManager::setBgmVolume(float volume, bool save /* = true */) {
@@ -430,8 +464,6 @@ float AudioManager::getBgmVolume() {
 // BGMのキャシュを解放する
 void AudioManager::releaseBgm() {
     AudioEngine::uncache(_bgmFileName);
-    _bgmId = AudioEngine::INVALID_AUDIO_ID;
-    _bgmFileName = "";
 }
 
 //===================
@@ -537,4 +569,11 @@ void AudioManager::releaseSe(const std::string baseName) {
     } else {
         AudioEngine::uncache(fileName);
     }
+}
+
+
+// AudioEngineを解放する
+void AudioManager::endAudioEngine() {
+    AudioEngine::end();
+    CocosDenshion::SimpleAudioEngine::getInstance()->end();
 }

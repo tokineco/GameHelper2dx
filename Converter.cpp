@@ -67,7 +67,19 @@ std::vector<std::string> Converter::split(std::string str, char delim) {
     result.push_back(std::string(str, current, str.size() - current));
 
     return result;
+}
 
+// 文字列の全置換
+std::string Converter::replaceAll(std::string str, std::string before, std::string after) {
+
+    std::string::size_type pos(str.find(before));
+
+    while (pos != std::string::npos) {
+        str.replace(pos, before.length(), after);
+        pos = str.find(before, pos + after.length());
+    }
+
+    return str;
 }
 
 // 文字列の先頭と末尾にあるホワイトスペースを取り除く

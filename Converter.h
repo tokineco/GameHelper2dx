@@ -24,6 +24,9 @@ public:
     // 文字列のsplit
     static std::vector<std::string> split(const std::string str, char delim);
 
+    // 文字列の全置換
+    static std::string replaceAll(const std::string str, std::string before, std::string after);
+
     // 文字列の先頭と末尾にあるホワイトスペースを取り除く
     static std::string trim(const std::string& str, const char* trimChars = " \t\v\r\n");
 

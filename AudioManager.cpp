@@ -302,6 +302,10 @@ void AudioManager::preloadBgm(const std::string baseName) {
 
 // BGMの再生
 int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bool roop /* = true*/) {
+    return playBgm(baseName, fadeTime, roop, _bgmVolume);
+}
+// BGMの再生
+int AudioManager::playBgm(const std::string baseName, float fadeTime, bool roop, float volume) {
 
     int soundId = AudioEngine::INVALID_AUDIO_ID;
 
@@ -321,9 +325,9 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
         _bgmFadeTime = fadeTime;
     } else {
         _fadeCondition = FadeType::NONE;
-        _bgmFadeVolumeNow = _bgmVolume;
+        _bgmFadeVolumeNow = volume;
     }
-    _bgmFadeVolumeTo = _bgmVolume;
+    _bgmFadeVolumeTo = volume;
 
 
     if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
@@ -334,7 +338,7 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
             return _bgmId;
         }
 
-        _bgmId = AudioEngine::play2d(fileName, roop, _bgmVolume);
+        _bgmId = AudioEngine::play2d(fileName, roop, volume);
         _bgmFileName = baseName;
     }
     return _bgmId;
@@ -486,6 +490,10 @@ void AudioManager::preloadSe(const std::string baseName) {
 }
 
 // 効果音を再生する
+int AudioManager::playSe(const std::string baseName, int chunkNo) {
+    return this->playSe(baseName, chunkNo, false, _seVolume);
+}
+// 効果音を再生する
 int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, float volume) {
 
     int soundId = AudioEngine::INVALID_AUDIO_ID;
@@ -518,21 +526,14 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
     return soundId;
 
 }
-
+// 効果音を再生する
 int AudioManager::playSe(const std::string baseName, bool roop, float volume) {
 
     return this->playSe(baseName, -1, roop, volume);
 }
-
-int AudioManager::playSe(const std::string baseName, bool roop) {
-
+// 効果音を再生する
+int AudioManager::playSe(const std::string baseName, bool roop /* = false */) {
     return this->playSe(baseName, roop, _seVolume);
-
-}
-
-// チャンク指定で再生(0～7)
-int AudioManager::playSe(const std::string fileName, int chunkNo) {
-    return this->playSe(fileName, chunkNo, false, _seVolume);
 }
 
 // 効果音を停止する

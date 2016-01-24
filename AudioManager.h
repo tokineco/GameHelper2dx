@@ -101,8 +101,8 @@ public:
     // 効果音を再生する
     // Args2 - chunkNo : チャンクを指定すると同じチャンク番号が指定された場合は、前の音を上書きする
     int playSe(const std::string baseName, int chunkNo);
-    int playSe(const std::string baseName, bool roop = false);
     int playSe(const std::string baseName, int chunkNo, bool roop, float volume);
+    int playSe(const std::string baseName, bool roop = false);
     int playSe(const std::string baseName, bool roop, float volume);
     // 効果音を停止する
     void stopSe(int soundId);

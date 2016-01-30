@@ -277,6 +277,11 @@ void AudioManager::update(float dt) {
 }
 
 
+// BGMとSEの音量の初期化
+void AudioManager::initVolume(float bgmVolume, float seVolume) {
+    _bgmVolume = bgmVolume;
+    _seVolume = seVolume;
+}
 
 //===================
 // BGM
@@ -460,7 +465,7 @@ void AudioManager::setBgmVolume(float volume, bool save /* = true */) {
     AudioEngine::setVolume(_bgmId, volume);
 }
 
-// 効果音の音量を取得する
+// BGMの音量を取得する
 float AudioManager::getBgmVolume() {
     return _bgmVolume;
 }

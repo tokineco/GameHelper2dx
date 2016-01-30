@@ -10,5 +10,6 @@ Copyright (c) 2015 Hiroshi Fukuda(tokineco)
 #include "AudioManager.h"
 #include "Converter.h"
 #include "MathHelper.h"
+#include "SDKBOXHelper.h"
 
 #endif /* defined(__GAMEHELPER2DX__) */

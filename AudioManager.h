@@ -73,6 +73,9 @@ public:
     bool readAudioListFile(const std::string fileName);
     // AudioEngine全てのキャッシュを削除する
     void releaseAll();
+    
+    // BGMとSEの音量の初期化
+    void initVolume(float bgmVolume, float seVolume);
 
     // BGMのPreLoad
     void preloadBgm(const std::string baseName);

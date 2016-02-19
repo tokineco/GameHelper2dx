@@ -80,8 +80,8 @@ public:
     // BGMのPreLoad
     void preloadBgm(const std::string baseName);
     // BGMの再生
-    int playBgm(const std::string baseName, float fadeTime = 0, bool roop = true);
-    int playBgm(const std::string baseName, float fadeTime, bool roop, float volume);
+    int playBgm(const std::string baseName, float fadeTime = 0, bool loop = true);
+    int playBgm(const std::string baseName, float fadeTime, bool loop, float volume);
     // BGMを一時停止する
     void pauseBgm(float fadeTime = 0);
     // BGMをリジューム再生する
@@ -104,9 +104,9 @@ public:
     // 効果音を再生する
     // Args2 - chunkNo : チャンクを指定すると同じチャンク番号が指定された場合は、前の音を上書きする
     int playSe(const std::string baseName, int chunkNo);
-    int playSe(const std::string baseName, int chunkNo, bool roop, float volume);
-    int playSe(const std::string baseName, bool roop = false);
-    int playSe(const std::string baseName, bool roop, float volume);
+    int playSe(const std::string baseName, int chunkNo, bool loop, float volume);
+    int playSe(const std::string baseName, bool loop = false);
+    int playSe(const std::string baseName, bool loop, float volume);
     // 効果音を停止する
     void stopSe(int soundId);
     // 効果音の音量を変更する

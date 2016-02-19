@@ -306,11 +306,11 @@ void AudioManager::preloadBgm(const std::string baseName) {
 }
 
 // BGMの再生
-int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bool roop /* = true*/) {
-    return playBgm(baseName, fadeTime, roop, _bgmVolume);
+int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bool loop /* = true*/) {
+    return playBgm(baseName, fadeTime, loop, _bgmVolume);
 }
 // BGMの再生
-int AudioManager::playBgm(const std::string baseName, float fadeTime, bool roop, float volume) {
+int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop, float volume) {
 
     int soundId = AudioEngine::INVALID_AUDIO_ID;
 
@@ -336,14 +336,14 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool roop,
 
 
     if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(fileName.c_str(), roop);
+        CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(fileName.c_str(), loop);
     } else {
         if (_bgmFileName == baseName && AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PLAYING) {
             // 前回と同じファイル名で、再生中の場合は無視する
             return _bgmId;
         }
 
-        _bgmId = AudioEngine::play2d(fileName, roop, volume);
+        _bgmId = AudioEngine::play2d(fileName, loop, volume);
         _bgmFileName = baseName;
     }
     return _bgmId;
@@ -499,7 +499,7 @@ int AudioManager::playSe(const std::string baseName, int chunkNo) {
     return this->playSe(baseName, chunkNo, false, _seVolume);
 }
 // 効果音を再生する
-int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, float volume) {
+int AudioManager::playSe(const std::string baseName, int chunkNo, bool loop, float volume) {
 
     int soundId = AudioEngine::INVALID_AUDIO_ID;
     bool chunkFlag = false;
@@ -518,9 +518,9 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
     }
 
     if (isSimpleAudioEngine(AudioType::SE, fileName)) {
-        soundId = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(fileName.c_str(), roop);
+        soundId = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(fileName.c_str(), loop);
     } else {
-        soundId = AudioEngine::play2d(fileName, roop, volume);
+        soundId = AudioEngine::play2d(fileName, loop, volume);
     }
 
     if (chunkFlag) {
@@ -532,13 +532,13 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool roop, flo
 
 }
 // 効果音を再生する
-int AudioManager::playSe(const std::string baseName, bool roop, float volume) {
+int AudioManager::playSe(const std::string baseName, bool loop, float volume) {
 
-    return this->playSe(baseName, -1, roop, volume);
+    return this->playSe(baseName, -1, loop, volume);
 }
 // 効果音を再生する
-int AudioManager::playSe(const std::string baseName, bool roop /* = false */) {
-    return this->playSe(baseName, roop, _seVolume);
+int AudioManager::playSe(const std::string baseName, bool loop /* = false */) {
+    return this->playSe(baseName, loop, _seVolume);
 }
 
 // 効果音を停止する

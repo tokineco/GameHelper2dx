@@ -5,11 +5,12 @@
 
 #include "SDKBOXHelper.h"
 
-#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
-#include "PluginGoogleAnalytics/PluginGoogleAnalytics.h"
-#endif
-
 USING_NS_CC;
+
+
+//==========================
+// Google Analytics
+//==========================
 
 // GoogleAnalyticsの初期化
 void SDKBOXHelper::initAnalytics() {
@@ -38,5 +39,31 @@ void SDKBOXHelper::sendAnalyticsEvent(std::string screenName, std::string eventC
     sdkbox::PluginGoogleAnalytics::logEvent(eventCategory, eventAction, eventLabel, value);
     sdkbox::PluginGoogleAnalytics::dispatchHits();
     CCLOG("send analytics : %s %s %s %s %d", screenName.c_str(), eventCategory.c_str(), eventAction.c_str(), eventLabel.c_str(), value);
+#endif
+}
+
+
+//==========================
+// In-App Purchase
+//==========================
+
+// iAPの初期化
+void SDKBOXHelper::initIAP() {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+    
+#if COCOS2D_DEBUG == 1
+    sdkbox::IAP::setDebug(true);
+#endif
+
+    sdkbox::IAP::init();
+    CCLOG("initialized iAP.");
+#endif
+}
+
+void SDKBOXHelper::setIAPListener(sdkbox::IAPListener * listener) {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+    
+    sdkbox::IAP::setListener(listener);
+
 #endif
 }

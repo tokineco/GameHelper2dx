@@ -60,6 +60,14 @@ void SDKBOXHelper::initIAP() {
 #endif
 }
 
+// iAPの最新データを取得する
+void SDKBOXHelper::refreshIAP() {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+    sdkbox::IAP::refresh();
+#endif
+}
+
+// iAPのリスナーセット(Mobileのみ)
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
 void SDKBOXHelper::setIAPListener(sdkbox::IAPListener * listener) {
     
@@ -67,3 +75,10 @@ void SDKBOXHelper::setIAPListener(sdkbox::IAPListener * listener) {
 
 }
 #endif
+
+// iAPの課金リクエスト
+void SDKBOXHelper::purchaseIAP(const std::string name) {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+    sdkbox::IAP::purchase(name);
+#endif
+}

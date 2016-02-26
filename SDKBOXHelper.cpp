@@ -60,10 +60,10 @@ void SDKBOXHelper::initIAP() {
 #endif
 }
 
-void SDKBOXHelper::setIAPListener(sdkbox::IAPListener * listener) {
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+void SDKBOXHelper::setIAPListener(sdkbox::IAPListener * listener) {
     
     sdkbox::IAP::setListener(listener);
 
-#endif
 }
+#endif

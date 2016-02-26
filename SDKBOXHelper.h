@@ -25,8 +25,10 @@ public:
     // iAPの初期化処理
     static void initIAP();
     // iAPのリスナーセット
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
     static void setIAPListener(sdkbox::IAPListener * listener);
-    
+#endif
+
 };
 
 #endif /* defined(__SDKBOXHelper__) */

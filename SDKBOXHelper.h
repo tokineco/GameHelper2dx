@@ -32,6 +32,8 @@ public:
 #endif
     // iAPの課金リクエスト
     static void purchaseIAP(const std::string name);
+    // iAPのリストア処理
+    static void restoreIAP();
 
 };
 

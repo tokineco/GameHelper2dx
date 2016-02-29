@@ -82,3 +82,10 @@ void SDKBOXHelper::purchaseIAP(const std::string name) {
     sdkbox::IAP::purchase(name);
 #endif
 }
+
+// iAPのリストア処理
+void SDKBOXHelper::restoreIAP() {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+    sdkbox::IAP::restore();
+#endif
+}

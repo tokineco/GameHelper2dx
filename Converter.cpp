@@ -45,6 +45,8 @@ bool Converter::stringToBool(std::string strBool, bool def) {
 
     if (strBool == "true" || strBool == "1") {
         return true;
+    } else if (strBool == "false" || strBool == "0") {
+        return false;
     }
 
     return def;

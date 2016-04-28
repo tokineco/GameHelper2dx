@@ -319,9 +319,14 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
         return soundId;
     }
 
+    if (!isSimpleAudioEngine(AudioType::BGM, fileName)) {
+        if (_bgmFileName == baseName && AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PLAYING) {
+            // 前回と同じファイル名で、再生中の場合は無視する
+            return _bgmId;
+        }
+    }
     // 前回のBGMを停止
     stopBgm();
-
     // フェード指定の場合
     if (fadeTime != 0) {
         _fadeCondition = FadeType::FADE_IN;
@@ -334,14 +339,9 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
     }
     _bgmFadeVolumeTo = volume;
 
-
     if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(fileName.c_str(), loop);
     } else {
-        if (_bgmFileName == baseName && AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PLAYING) {
-            // 前回と同じファイル名で、再生中の場合は無視する
-            return _bgmId;
-        }
 
         _bgmId = AudioEngine::play2d(fileName, loop, volume);
 

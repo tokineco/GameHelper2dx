@@ -283,6 +283,18 @@ void AudioManager::initVolume(float bgmVolume, float seVolume) {
     _seVolume = seVolume;
 }
 
+// モバイルデバイスかどうか
+bool AudioManager::isMobileDevice() {
+    auto platform = Application::getInstance()->getTargetPlatform();
+    if (platform == cocos2d::ApplicationProtocol::Platform::OS_ANDROID
+        || platform == cocos2d::ApplicationProtocol::Platform::OS_IPHONE
+        || platform == cocos2d::ApplicationProtocol::Platform::OS_IPAD) {
+        return true;
+    }
+    
+    return false;
+}
+
 //===================
 // BGM
 //===================
@@ -325,8 +337,10 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
             return _bgmId;
         }
     }
+
     // 前回のBGMを停止
     stopBgm();
+
     // フェード指定の場合
     if (fadeTime != 0) {
         _fadeCondition = FadeType::FADE_IN;
@@ -352,9 +366,10 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
                 _bgmId = playBgm(fileName, 0, loop, volume);
             });
         }
-        
-        _bgmFileName = baseName;
     }
+
+    _bgmFileName = baseName;
+    
     return _bgmId;
 }
 
@@ -382,9 +397,11 @@ void AudioManager::pauseBgm(float fadeTime /*= 0*/) {
 // pauseBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
 void AudioManager::pauseBgmEngine() {
 
-    // Windows版wav用にこれも実行しておく
-    CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
-    AudioEngine::pause(_bgmId);
+    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
+    } else {
+        AudioEngine::pause(_bgmId);
+    }
 }
 
 // BGMをリジューム再生する
@@ -402,9 +419,11 @@ void AudioManager::resumeBgm(float fadeTime /*=0*/) {
     }
     _bgmFadeVolumeTo = _bgmVolume;
 
-    // Windows版wav用にこれも実行しておく
-    CocosDenshion::SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
-    AudioEngine::resume(_bgmId);
+    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
+    } else {
+        AudioEngine::resume(_bgmId);
+    }
 }
 
 // BGMを停止する
@@ -431,9 +450,11 @@ void AudioManager::stopBgm(float fadeTime /*= 0*/, bool release /* = true */) {
 // stopBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
 void AudioManager::stopBgmEngine(bool release /* = true */) {
 
-    // Windows版wav用にこれも実行しておく
-    CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic(release);
-    AudioEngine::stop(_bgmId);
+    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic(release);
+    } else {
+        AudioEngine::stop(_bgmId);
+    }
 
     // キャッシュ解放
     if (release) {
@@ -470,8 +491,11 @@ void AudioManager::setBgmVolume(float volume, bool save /* = true */) {
         _bgmVolume = volume;
     }
 
-    CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(volume);
-    AudioEngine::setVolume(_bgmId, volume);
+    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(volume);
+    } else {
+        AudioEngine::setVolume(_bgmId, volume);
+    }
 }
 
 // BGMの音量を取得する
@@ -553,8 +577,10 @@ int AudioManager::playSe(const std::string baseName, bool loop /* = false */) {
 // 効果音を停止する
 void AudioManager::stopSe(int soundId) {
 
-    // Windows版wav用にこれも実行しておく
-    CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(soundId);
+    // モバイルではSimpleAudioEngineは使用せず、インスタンス化すると競合して再生できないので、使わないようにする
+    if (!isMobileDevice()) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(soundId);
+    }
 
     AudioEngine::stop(soundId);
 }
@@ -562,7 +588,12 @@ void AudioManager::stopSe(int soundId) {
 // 効果音の音量を変更する
 void AudioManager::setSeVolume(float volume) {
     _seVolume = volume;
-    CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(_seVolume);
+
+    // モバイルではSimpleAudioEngineは使用せず、インスタンス化すると競合して再生できないので、使わないようにする
+    if (!isMobileDevice()) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(_seVolume);
+    }
+
     //AudioEngine::setVolume(soundId, _seVolume);
 }
 
@@ -590,5 +621,8 @@ void AudioManager::releaseSe(const std::string baseName) {
 // AudioEngineを解放する
 void AudioManager::endAudioEngine() {
     AudioEngine::end();
-    CocosDenshion::SimpleAudioEngine::getInstance()->end();
+    // モバイルではSimpleAudioEngineは使用せず、インスタンス化すると競合して再生できないので、使わないようにする
+    if (!isMobileDevice()) {
+        CocosDenshion::SimpleAudioEngine::getInstance()->end();
+    }
 }

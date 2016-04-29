@@ -131,6 +131,9 @@ private:
 
     // stopBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
     void stopBgmEngine(bool release = true);
+    
+    // モバイルデバイスかどうか
+    bool isMobileDevice();
 };
 
 #endif /* defined(__AudioManager__) */

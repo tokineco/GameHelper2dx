@@ -1,5 +1,5 @@
 ﻿/****************************************************************************
-Copyright (c) 2015 Hiroshi Fukuda(tokineco)
+Copyright (c) 2016 Yuji Toki(tokineco)
  * required Cocos2d-x v3.8 over.
 ****************************************************************************/
 
@@ -10,6 +10,6 @@ Copyright (c) 2015 Hiroshi Fukuda(tokineco)
 #include "AudioManager.h"
 #include "Converter.h"
 #include "MathHelper.h"
-#include "SDKBOXHelper.h"
+//#include "SDKBOXHelper.h"
 
 #endif /* defined(__GAMEHELPER2DX__) */

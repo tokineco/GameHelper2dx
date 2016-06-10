@@ -113,11 +113,11 @@ bool AudioManager::readAudioListFile(const std::string fileName) {
                     _bgmList[key] = value[0].GetString();
                     // 2番目はループ後の再生開始位置
                     if (value.Size() > 1) {
-                        _bgmLoopList[key][0] = (float)(value[1].GetDouble());
+                        _bgmLoopList[key].startPos = (float)(value[1].GetDouble());
                     }
                     // 3番目はループ終端位置
                     if (value.Size() > 2) {
-                        _bgmLoopList[key][1] = (float)(value[2].GetDouble());
+                        _bgmLoopList[key].endPos = (float)(value[2].GetDouble());
                     }
                 
             }
@@ -308,10 +308,10 @@ void AudioManager::update(float dt) {
             float duration = AudioEngine::getDuration(_bgmId);                  // オーディオの長さ
 
             // 区間設定情報
-            float startPos = _bgmLoopList[_bgmFileName][0];
+            float startPos = _bgmLoopList[_bgmFileName].startPos;
             float endPos = duration;
-            if (sizeof(_bgmLoopList[_bgmFileName]) / sizeof(_bgmLoopList[_bgmFileName][0]) > 1) {
-                endPos = _bgmLoopList[_bgmFileName][1];
+            if (_bgmLoopList[_bgmFileName].endPos > 0) {
+                endPos = _bgmLoopList[_bgmFileName].endPos;
             }
 
             if (currentTime >= endPos) {

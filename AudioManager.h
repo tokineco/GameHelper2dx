@@ -37,7 +37,11 @@ private:
     // BGMファイルリスト
     std::map<std::string, std::string> _bgmList;
     // BGMファイル区間設定リスト
-    std::map<std::string, float[2]> _bgmLoopList;
+    struct BgmLoopParams {
+        float startPos;
+        float endPos;
+    };
+    std::map<std::string, BgmLoopParams> _bgmLoopList;
     // SEファイルリスト
     std::map<std::string, std::string> _seList;
 

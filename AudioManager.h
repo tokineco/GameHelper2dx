@@ -1,5 +1,10 @@
-// BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
-// SE: Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
+/****************************************************************************
+ Copyright (c) 2016 Yuji Toki(tokineco)
+ - MIT license
+
+ BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
+ SE: Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
+****************************************************************************/
 
 #ifndef __AudioManager__
 #define __AudioManager__
@@ -31,6 +36,8 @@ private:
 
     // BGMファイルリスト
     std::map<std::string, std::string> _bgmList;
+    // BGMファイル区間設定リスト
+    std::map<std::string, float[2]> _bgmLoopList;
     // SEファイルリスト
     std::map<std::string, std::string> _seList;
 

@@ -1,10 +1,15 @@
-// BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
-// SE : Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
+/****************************************************************************
+Copyright (c) 2016 Yuji Toki(tokineco)
+- MIT license
+
+BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
+SE: Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
+****************************************************************************/
 
 #pragma execution_character_set("utf-8")
 
-#include "SimpleAudioEngine.h"              // Windows-ogg, wav
-#include "audio/include/AudioEngine.h"      // iOS, Android
+#include "SimpleAudioEngine.h"              // BGM:Windows-ogg, wav, SE:Win32-wav
+#include "audio/include/AudioEngine.h"
 #include "json/rapidjson.h"
 #include "json/document.h"
 
@@ -77,16 +82,17 @@ bool AudioManager::readAudioListFile(const std::string fileName) {
 
     if (doc.HasParseError()) {
         // 解析エラー
-        log("JSON error : %u", doc.GetParseError());
+        CCLOG("JSON parse error.");
         return false;
     }
 
     if (doc.IsObject()) {
 
-        log("%s", strData.c_str());
+        CCLOG("%s", strData.c_str());
 
         // 初期化
         _bgmList.clear();
+        _bgmLoopList.clear();
         _seList.clear();
 
         // BGM
@@ -96,8 +102,24 @@ bool AudioManager::readAudioListFile(const std::string fileName) {
         for (rapidjson::Value::ConstMemberIterator it = bgms.MemberBegin(); it != bgms.MemberEnd(); it++) {
             std::string key = it->name.GetString();
             const rapidjson::Value& value = it->value;
+            // 通常のファイルパスの場合
             if (value.GetType() == rapidjson::kStringType) {
                 _bgmList[key] = value.GetString();
+            }
+            // 配列の場合
+            else if (value.GetType() == rapidjson::kArrayType) {
+
+                    // 1番目はファイルパス
+                    _bgmList[key] = value[0].GetString();
+                    // 2番目はループ後の再生開始位置
+                    if (value.Size() > 1) {
+                        _bgmLoopList[key][0] = (float)(value[1].GetDouble());
+                    }
+                    // 3番目はループ終端位置
+                    if (value.Size() > 2) {
+                        _bgmLoopList[key][1] = (float)(value[2].GetDouble());
+                    }
+                
             }
         }
 
@@ -192,7 +214,7 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
     }
 
     // それでも見つからなければ空文字を返して、その先でエラーとする
-    log("file not found %s.", baseName.c_str());
+    CCLOG("file not found %s.", baseName.c_str());
     return baseName;
 
 }
@@ -274,6 +296,31 @@ void AudioManager::update(float dt) {
         default:
             break;
     }
+
+    // ループチェック
+    if (this->isPlayingBgm() && _bgmLoopList.count(_bgmFileName) > 0) {
+
+        std::string fileName = getFileName(AudioType::BGM, _bgmFileName);
+
+        if (fileName != "" && !isSimpleAudioEngine(AudioType::BGM, fileName)) {
+            // 現在のBGM情報を取得
+            float currentTime = AudioEngine::getCurrentTime(_bgmId);    // 現在の位置
+            float duration = AudioEngine::getDuration(_bgmId);                  // オーディオの長さ
+
+            // 区間設定情報
+            float startPos = _bgmLoopList[_bgmFileName][0];
+            float endPos = duration;
+            if (sizeof(_bgmLoopList[_bgmFileName]) / sizeof(_bgmLoopList[_bgmFileName][0]) > 1) {
+                endPos = _bgmLoopList[_bgmFileName][1];
+            }
+
+            if (currentTime >= endPos) {
+                CCLOG("loop and move. current time is %f sec.", startPos);
+                AudioEngine::setCurrentTime(_bgmId, startPos);
+            }
+        }
+    }
+
 }
 
 

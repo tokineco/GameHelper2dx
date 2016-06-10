@@ -1,6 +1,13 @@
-//
-// SDKBOXHelper.cpp
-//
+/****************************************************************************
+Copyright (c) 2016 Yuji Toki(tokineco)
+- MIT license
+
+- In-App Purchase
+- Google Analytics
+
+* 使用しない場合はプロジェクトから外してください
+****************************************************************************/
+
 #pragma execution_character_set("utf-8")
 
 #include "SDKBOXHelper.h"

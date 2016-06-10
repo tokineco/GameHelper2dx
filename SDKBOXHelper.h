@@ -1,6 +1,13 @@
-//
-// SDKBOXHelper.h
-//
+/****************************************************************************
+ Copyright (c) 2016 Yuji Toki(tokineco)
+ - MIT license
+
+ - In-App Purchase
+ - Google Analytics
+
+ * 使用しない場合はプロジェクトから外してください
+****************************************************************************/
+
 #ifndef __SDKBOXHelper__
 #define __SDKBOXHelper__
 

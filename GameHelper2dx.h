@@ -1,6 +1,7 @@
 ﻿/****************************************************************************
-Copyright (c) 2016 Yuji Toki(tokineco)
- * required Cocos2d-x v3.8 over.
+ Copyright (c) 2016 Yuji Toki(tokineco)
+ - required Cocos2d-x v3.8 over
+ - MIT license
 ****************************************************************************/
 
 #ifndef __GAMEHELPER2DX__
@@ -10,6 +11,7 @@ Copyright (c) 2016 Yuji Toki(tokineco)
 #include "AudioManager.h"
 #include "Converter.h"
 #include "MathHelper.h"
+
 //#include "SDKBOXHelper.h"
 
 #endif /* defined(__GAMEHELPER2DX__) */

@@ -1,6 +1,7 @@
-//
-// Converter.cpp
-//
+/****************************************************************************
+Copyright (c) 2016 Yuji Toki(tokineco)
+- MIT license
+****************************************************************************/
 
 #pragma execution_character_set("utf-8")
 
@@ -29,11 +30,11 @@ cocos2d::Color4B Converter::fromARGB(std::string code) {
 
         } catch (...) {
             // Error
-            log("illegal color code : %s", code.c_str());
+            CCLOG("illegal color code : %s", code.c_str());
         }
     } else {
         // Error
-        log("not supeert format : %s", code.c_str());
+        CCLOG("not supeert format : %s", code.c_str());
     }
 
     return cocos2d::Color4B::BLACK;

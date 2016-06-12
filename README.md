@@ -22,19 +22,22 @@ MIT Licenseのもと、自由に使用できます。
 個別指定の場合は、
 
     #import "lib/GameHelper2dx/AudioManager.h"
-    #import "lib/GameHelper2dx/Converter.h"
 
 ---
 ### AudioManager
 AudioManagerでは、一部のプラットフォーム・形式を除いてCocos2d-xのAudioEngineを使用しています。  
 **BGMのフェードや区間ループ、SEのチャンク指定再生にも対応しています。**
 
+シンプルな使い方
+
+    // 1.5秒のフェードインをしながらtitleを再生
+    AudioManager::getInstance()->playBgm("bgm/title", 1.5f);
+
+拡張子は不要です(Cocos2dxが対応する拡張子が存在すれば再生します)  
+
 また、事前にjson形式のaudio定義ファイルを読み込むことによって、再生キー名、ファイルパスを定義することができ、ファイル名の仕様変更等に対応できます。さらに、BGMの区間ループにも対応可能となります。
 
-読み込み方法(C++)
-
-    // オーディオ定義ファイルの読み込み  
-    AudioManager::getInstance()->readAudioListFile("data/audio.json");
+定義ファイルの構造と読み込み方法
 
 [Resources/data/audio.json]
 
@@ -51,7 +54,11 @@ AudioManagerでは、一部のプラットフォーム・形式を除いてCocos
         }
     }
 
-拡張子は不要です(Cocos2dxが対応する拡張子が存在すれば再生します)  
+読み込みコード(AppDelegate.cpp等)
+
+    // オーディオ定義ファイルの読み込み  
+    AudioManager::getInstance()->readAudioListFile("data/audio.json");
+
 BGMのvalueを配列指定の場合、[ファイルパス, ループ開始位置(秒), ループ終端位置(秒)] で区間ループに対応します。
 
 定義ファイルを読み込んでいない場合、オーディオ再生に指定するファイル名はファイルパスを指定してください。

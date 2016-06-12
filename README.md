@@ -17,11 +17,11 @@ MIT Licenseのもと、自由に使用できます。
 
 使用したいヘッダファイルのみをインポートするか、全てのライブラリ(SDKBOXを除く)を使いたい場合は"GameHelper2dx.h"をインポートしてください。
   
-    #import "lib/GameHelper2dx/GameHelper2dx.h"
+    #include "lib/GameHelper2dx/GameHelper2dx.h"
 
 個別指定の場合は、
 
-    #import "lib/GameHelper2dx/AudioManager.h"
+    #include "lib/GameHelper2dx/AudioManager.h"
 
 ---
 ### AudioManager
@@ -98,5 +98,5 @@ BGMのvalueを配列指定の場合、[ファイルパス, ループ開始位置
 オマケ程度にどうぞ。
 
 ---
-朱鷺裕二 @ cretia studio  
+朱鷺裕二(Yuji Toki) @ cretia studio  
 http://studio.cretia.net

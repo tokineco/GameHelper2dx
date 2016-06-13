@@ -34,7 +34,7 @@ cocos2d::Color4B Converter::fromARGB(std::string code) {
         }
     } else {
         // Error
-        CCLOG("not supeert format : %s", code.c_str());
+        CCLOG("not support format : %s", code.c_str());
     }
 
     return cocos2d::Color4B::BLACK;

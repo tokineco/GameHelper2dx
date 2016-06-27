@@ -517,6 +517,10 @@ void AudioManager::stopBgmEngine(bool release /* = true */) {
 // BGMが再生されているかどうか
 bool AudioManager::isPlayingBgm() {
 
+    if (_bgmFileName == "") {
+        return false;
+    }
+
     std::string fileName = getFileName(AudioType::BGM, _bgmFileName);
 
     if (isSimpleAudioEngine(AudioType::BGM, fileName)) {

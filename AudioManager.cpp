@@ -311,7 +311,7 @@ void AudioManager::update(float dt) {
             float startPos = _bgmLoopList[_bgmFileName].startPos;
             float endPos = duration;
             // 開始位置を超えていたら、区間内フラグを立てる
-            if (currentTime > startPos) {
+            if (!_bgmLoopList[_bgmFileName].isLoopInterval && currentTime > startPos) {
                 _bgmLoopList[_bgmFileName].isLoopInterval = true;
             }
             if (_bgmLoopList[_bgmFileName].endPos > 0) {
@@ -322,8 +322,8 @@ void AudioManager::update(float dt) {
             }
 
             if (endPos > 0 && 
-                (currentTime >= endPos || 
-                (currentTime < startPos && _bgmLoopList[_bgmFileName].isLoopInterval))) {
+                (currentTime >= endPos - 0.1f || 
+                (currentTime < startPos - 0.1f && _bgmLoopList[_bgmFileName].isLoopInterval))) {
 
                 CCLOG("loop and move. current time is %f sec.", startPos);
                 AudioEngine::setCurrentTime(_bgmId, startPos);

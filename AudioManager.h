@@ -40,6 +40,7 @@ private:
     struct BgmLoopParams {
         float startPos;
         float endPos;
+        bool isLoopInterval;
     };
     std::map<std::string, BgmLoopParams> _bgmLoopList;
     // SEファイルリスト

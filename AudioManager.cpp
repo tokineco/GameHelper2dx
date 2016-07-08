@@ -310,11 +310,21 @@ void AudioManager::update(float dt) {
             // 区間設定情報
             float startPos = _bgmLoopList[_bgmFileName].startPos;
             float endPos = duration;
+            // 開始位置を超えていたら、区間内フラグを立てる
+            if (currentTime > startPos) {
+                _bgmLoopList[_bgmFileName].isLoopInterval = true;
+            }
             if (_bgmLoopList[_bgmFileName].endPos > 0) {
                 endPos = _bgmLoopList[_bgmFileName].endPos;
+                if (endPos > duration) {
+                    endPos = duration;
+                }
             }
 
-            if (currentTime >= endPos) {
+            if (endPos > 0 && 
+                (currentTime >= endPos || 
+                (currentTime < startPos && _bgmLoopList[_bgmFileName].isLoopInterval))) {
+
                 CCLOG("loop and move. current time is %f sec.", startPos);
                 AudioEngine::setCurrentTime(_bgmId, startPos);
             }
@@ -400,7 +410,7 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
     }
     _bgmFadeVolumeTo = volume;
 
-    if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
+    if (isSimpleAudioEngine(AudioType::BGM, baseName)) {
         CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(fileName.c_str(), loop);
     } else {
 
@@ -411,7 +421,7 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
             // 失敗した時のみ実行される
             AudioEngine::setFinishCallback(_bgmId, [this, loop, volume](int bgmId, std::string fileName) {
                 stopBgm(0, false);
-                _bgmId = playBgm(fileName, 0, loop, volume);
+                _bgmId = playBgm(_bgmFileName, 0, loop, volume);
             });
         }
     }
@@ -557,7 +567,8 @@ float AudioManager::getBgmVolume() {
 
 // BGMのキャシュを解放する
 void AudioManager::releaseBgm() {
-    AudioEngine::uncache(_bgmFileName);
+    auto fileName = getFileName(AudioType::BGM, _bgmFileName);
+    AudioEngine::uncache(fileName);
 }
 
 //===================

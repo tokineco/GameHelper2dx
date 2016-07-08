@@ -321,11 +321,16 @@ void AudioManager::update(float dt) {
                 }
             }
 
-            if (endPos > 0 && 
-                (currentTime >= endPos - 0.1f || 
-                (currentTime < startPos - 0.1f && _bgmLoopList[_bgmFileName].isLoopInterval))) {
+            if (endPos <= 0) {
+                return;
+            }
 
-                CCLOG("loop and move. current time is %f sec.", startPos);
+            if (// 2回目以降なのに、ループ開始地点より前にあったら
+                (_bgmLoopList[_bgmFileName].isLoopInterval && currentTime < startPos - 0.1f)
+                // または、endPosが終端近くではなくて、endPosを超えている場合
+                || (duration - endPos >= 0.2f && currentTime >= endPos)) {
+
+                CCLOG("bgm end. current time is %f sec.", currentTime);
                 AudioEngine::setCurrentTime(_bgmId, startPos);
             }
         }

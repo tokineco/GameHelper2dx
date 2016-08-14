@@ -18,3 +18,61 @@ int MathHelper::getRandom(int minValue, int maxValue) {
 
     return num(mt);
 }
+
+// 文字列で渡された比較演算子の結果を返す
+bool MathHelper::isComparisonValue(int leftValue, std::string symbol, int rightValue) {
+
+    // %値 対応
+    int modNum = 1;
+    if (symbol.substr(0, 1) == "%") {
+        modNum = std::atoi(symbol.substr(1).c_str());
+        symbol = "%";
+    }
+
+    if (symbol == "=" || symbol == "==") {
+        if (leftValue == rightValue) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (symbol == ">") {
+        if (leftValue > rightValue) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (symbol == "<") {
+        if (leftValue < rightValue) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (symbol == ">=") {
+        if (leftValue >= rightValue) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (symbol == "<=") {
+        if (leftValue <= rightValue) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (symbol == "!=") {
+        if (leftValue != rightValue) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (symbol == "%") {
+        if (leftValue % modNum == rightValue) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        // 演算子がみつからない
+        return false;
+    }
+}

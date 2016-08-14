@@ -15,6 +15,9 @@ public:
     // min以上max以下のint値をランダムに返す
     static int getRandom(int minValue, int maxValue);
 
+    // 文字列による比較演算子の結果を返す
+    static bool isComparisonValue(int leftValue, std::string symbol, int rightValue);
+
 };
 
 #endif /* defined(__MathHelper__) */

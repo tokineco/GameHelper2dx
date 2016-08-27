@@ -10,7 +10,7 @@ Copyright (c) 2016 Yuji Toki(tokineco)
 USING_NS_CC;
 
 // "0xARGB"の文字列からアルファ付きのColor4Bを返す
-cocos2d::Color4B Converter::fromARGB(std::string code) {
+cocos2d::Color4B Converter::fromARGB(const std::string &code) {
 
     // 0xARGBコードが見つかったら
     if (code.find("0x") == 0 && code.length() == 10) {
@@ -42,7 +42,7 @@ cocos2d::Color4B Converter::fromARGB(std::string code) {
 
 // 文字列の "true" or "false" を bool型の true or false に変換する
 // "1"もtrueとして扱う
-bool Converter::stringToBool(std::string strBool, bool def) {
+bool Converter::stringToBool(const std::string &strBool, const bool &def) {
 
     if (strBool == "true" || strBool == "1") {
         return true;
@@ -53,21 +53,27 @@ bool Converter::stringToBool(std::string strBool, bool def) {
     return def;
 }
 
-bool Converter::stringToBool(std::string strBool) {
+bool Converter::stringToBool(const std::string &strBool) {
     return stringToBool(strBool, false);
 }
 
 // 文字列のSplit
-std::vector<std::string> Converter::split(std::string str, char delim) {
+std::vector<std::string> Converter::split(const std::string &str, const char &delim) {
 
     std::vector<std::string> result;
-    std::string::size_type current = 0, delimIdx;
+    std::string::size_type current = 0;
 
-    while ((delimIdx = str.find_first_of(delim, current)) != std::string::npos) {
-        result.push_back(std::string(str, current, delimIdx - current));
+    while (current != std::string::npos) {
+        std::string::size_type delimIdx = str.find_first_of(delim, current);
+
+        if (delimIdx == std::string::npos) {
+            result.push_back(str.substr(current));
+            break;
+        } else {
+            result.push_back(str.substr(current, delimIdx - current));
+        }
         current = delimIdx + 1;
     }
-    result.push_back(std::string(str, current, str.size() - current));
 
     return result;
 }

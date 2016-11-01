@@ -431,6 +431,10 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
         }
     }
 
+    if (_bgmLoopList.count(_bgmFileName) > 0) {
+        _bgmLoopList[_bgmFileName].isLoopInterval = false;
+    }
+    
     _bgmFileName = baseName;
     
     return _bgmId;

@@ -430,8 +430,12 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
             });
         }
     }
-
+    
     _bgmFileName = baseName;
+	
+    if (_bgmLoopList.count(_bgmFileName) > 0) {
+        _bgmLoopList[_bgmFileName].isLoopInterval = false;
+    }
     
     return _bgmId;
 }

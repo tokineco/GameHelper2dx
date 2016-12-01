@@ -1,14 +1,9 @@
 /****************************************************************************
 Copyright (c) 2016 Yuji Toki(tokineco)
 - MIT license
-
-BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
-SE: Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
 ****************************************************************************/
-
 #pragma execution_character_set("utf-8")
 
-#include "SimpleAudioEngine.h"              // BGM:Windows-ogg, wav, SE:Win32-wav
 #include "audio/include/AudioEngine.h"
 #include "json/rapidjson.h"
 #include "json/document.h"
@@ -174,21 +169,20 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
     switch (platform) {
         case cocos2d::ApplicationProtocol::Platform::OS_WINDOWS:
 
-            // mp3> ogg > wav
-            if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
-                ext = ".mp3";
-            }
-            else if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
+            // ogg > mp3 > wav
+            if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
                 ext = ".ogg";
+            } else if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
+                ext = ".mp3";
             }
             break;
         case cocos2d::ApplicationProtocol::Platform::OS_ANDROID:
 
-            // m4a > ogg > mp3 > wav
-            if (FileUtils::getInstance()->isFileExist(baseName + ".m4a")) {
-                ext = ".m4a";
-            } else if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
+            // ogg > m4a > mp3 > wav
+            if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
                 ext = ".ogg";
+            } else if (FileUtils::getInstance()->isFileExist(baseName + ".m4a")) {
+                ext = ".m4a";
             } else if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
                 ext = ".mp3";
             }
@@ -217,27 +211,6 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
     CCLOG("file not found %s.", baseName.c_str());
     return baseName;
 
-}
-
-// SimpleEngineを使うかどうか
-bool AudioManager::isSimpleAudioEngine(AudioType type, const std::string fileName) {
-
-    bool isWav = false;
-
-    auto fu = FileUtils::getInstance();
-
-    if (type == AudioType::BGM) {
-        isWav = (fu->getFileExtension(fileName).compare(".wav") || fu->getFileExtension(fileName).compare(".ogg")) == 0 ? 1 : 0;
-    } else {
-        isWav = (fu->getFileExtension(fileName).compare(".wav") == 0) ? 1 : 0;
-    }
-
-    Application::Platform platform = Application::getInstance()->getTargetPlatform();
-    if (platform == Application::Platform::OS_WINDOWS && isWav == 1) {
-        return true;
-    }
-
-    return false;
 }
 
 // AudioEngine全てのキャッシュを削除する
@@ -302,7 +275,7 @@ void AudioManager::update(float dt) {
 
         std::string fileName = getFileName(AudioType::BGM, _bgmFileName);
 
-        if (fileName != "" && !isSimpleAudioEngine(AudioType::BGM, fileName)) {
+        if (fileName != "") {
             // 現在のBGM情報を取得
             float currentTime = AudioEngine::getCurrentTime(_bgmId);    // 現在の位置
             float duration = AudioEngine::getDuration(_bgmId);                  // オーディオの長さ
@@ -369,13 +342,7 @@ void AudioManager::preloadBgm(const std::string baseName) {
         return;
     }
 
-    if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic(fileName.c_str());
-        // iOSでなぜかBGMが再生されてしまうのを防ぐため、stopしておく
-        CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic();
-    } else {
-        AudioEngine::preload(fileName);
-    }
+    AudioEngine::preload(fileName);
 
 }
 
@@ -393,11 +360,9 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
         return soundId;
     }
 
-    if (!isSimpleAudioEngine(AudioType::BGM, fileName)) {
-        if (_bgmFileName == baseName && AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PLAYING) {
-            // 前回と同じファイル名で、再生中の場合は無視する
-            return _bgmId;
-        }
+    if (_bgmFileName == baseName && AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PLAYING) {
+        // 前回と同じファイル名で、再生中の場合は無視する
+        return _bgmId;
     }
 
     // 前回のBGMを停止
@@ -415,20 +380,15 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
     }
     _bgmFadeVolumeTo = volume;
 
-    if (isSimpleAudioEngine(AudioType::BGM, baseName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(fileName.c_str(), loop);
-    } else {
+    _bgmId = AudioEngine::play2d(fileName, loop, volume);
 
-        _bgmId = AudioEngine::play2d(fileName, loop, volume);
-
-        if (loop) {
-            // FinishCallback は ループ中には実行されない
-            // 失敗した時のみ実行される
-            AudioEngine::setFinishCallback(_bgmId, [this, loop, volume](int bgmId, std::string fileName) {
-                stopBgm(0, false);
-                _bgmId = playBgm(_bgmFileName, 0, loop, volume);
-            });
-        }
+    if (loop) {
+        // FinishCallback は ループ中には実行されない
+        // 失敗した時のみ実行される
+        AudioEngine::setFinishCallback(_bgmId, [this, loop, volume](int bgmId, std::string fileName) {
+            stopBgm(0, false);
+            _bgmId = playBgm(_bgmFileName, 0, loop, volume);
+        });
     }
     
     _bgmFileName = baseName;
@@ -463,12 +423,7 @@ void AudioManager::pauseBgm(float fadeTime /*= 0*/) {
 
 // pauseBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
 void AudioManager::pauseBgmEngine() {
-
-    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
-    } else {
-        AudioEngine::pause(_bgmId);
-    }
+    AudioEngine::pause(_bgmId);
 }
 
 // BGMをリジューム再生する
@@ -486,11 +441,7 @@ void AudioManager::resumeBgm(float fadeTime /*=0*/) {
     }
     _bgmFadeVolumeTo = _bgmVolume;
 
-    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
-    } else {
-        AudioEngine::resume(_bgmId);
-    }
+    AudioEngine::resume(_bgmId);
 }
 
 // BGMを停止する
@@ -517,11 +468,7 @@ void AudioManager::stopBgm(float fadeTime /*= 0*/, bool release /* = true */) {
 // stopBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
 void AudioManager::stopBgmEngine(bool release /* = true */) {
 
-    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic(release);
-    } else {
-        AudioEngine::stop(_bgmId);
-    }
+    AudioEngine::stop(_bgmId);
 
     // キャッシュ解放
     if (release) {
@@ -542,13 +489,9 @@ bool AudioManager::isPlayingBgm() {
 
     std::string fileName = getFileName(AudioType::BGM, _bgmFileName);
 
-    if (isSimpleAudioEngine(AudioType::BGM, fileName)) {
-        return CocosDenshion::SimpleAudioEngine::getInstance()->isBackgroundMusicPlaying();
-    } else {
-        AudioEngine::AudioState state = AudioEngine::getState(_bgmId);
-        if (state == AudioEngine::AudioState::PLAYING) {
-            return true;
-        }
+    AudioEngine::AudioState state = AudioEngine::getState(_bgmId);
+    if (state == AudioEngine::AudioState::PLAYING) {
+        return true;
     }
 
     return false;
@@ -562,11 +505,7 @@ void AudioManager::setBgmVolume(float volume, bool save /* = true */) {
         _bgmVolume = volume;
     }
 
-    if (isSimpleAudioEngine(AudioType::BGM, _bgmFileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->setBackgroundMusicVolume(volume);
-    } else {
-        AudioEngine::setVolume(_bgmId, volume);
-    }
+    AudioEngine::setVolume(_bgmId, volume);
 }
 
 // BGMの音量を取得する
@@ -591,12 +530,7 @@ void AudioManager::preloadSe(const std::string baseName) {
     if (fileName == "") {
         return;
     }
-
-    if (isSimpleAudioEngine(AudioType::SE, fileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect(fileName.c_str());
-    } else {
-        AudioEngine::preload(fileName);
-    }
+    AudioEngine::preload(fileName);
 }
 
 // 効果音を再生する
@@ -622,11 +556,7 @@ int AudioManager::playSe(const std::string baseName, int chunkNo, bool loop, flo
         this->stopSe(_chunk[chunkNo]);
     }
 
-    if (isSimpleAudioEngine(AudioType::SE, fileName)) {
-        soundId = CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(fileName.c_str(), loop);
-    } else {
-        soundId = AudioEngine::play2d(fileName, loop, volume);
-    }
+    soundId = AudioEngine::play2d(fileName, loop, volume);
 
     if (chunkFlag) {
         // チャンクにSoundIdを登録
@@ -648,24 +578,12 @@ int AudioManager::playSe(const std::string baseName, bool loop /* = false */) {
 
 // 効果音を停止する
 void AudioManager::stopSe(int soundId) {
-
-    // モバイルではSimpleAudioEngineは使用せず、インスタンス化すると競合して再生できないので、使わないようにする
-    if (!isMobileDevice()) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->stopEffect(soundId);
-    }
-
     AudioEngine::stop(soundId);
 }
 
 // 効果音の音量を変更する
 void AudioManager::setSeVolume(float volume) {
     _seVolume = volume;
-
-    // モバイルではSimpleAudioEngineは使用せず、インスタンス化すると競合して再生できないので、使わないようにする
-    if (!isMobileDevice()) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(_seVolume);
-    }
-
     //AudioEngine::setVolume(soundId, _seVolume);
 }
 
@@ -682,19 +600,11 @@ void AudioManager::releaseSe(const std::string baseName) {
         return;
     }
 
-    if (isSimpleAudioEngine(AudioType::SE, fileName)) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->unloadEffect(fileName.c_str());
-    } else {
-        AudioEngine::uncache(fileName);
-    }
+    AudioEngine::uncache(fileName);
 }
 
 
 // AudioEngineを解放する
 void AudioManager::endAudioEngine() {
     AudioEngine::end();
-    // モバイルではSimpleAudioEngineは使用せず、インスタンス化すると競合して再生できないので、使わないようにする
-    if (!isMobileDevice()) {
-        CocosDenshion::SimpleAudioEngine::getInstance()->end();
-    }
 }

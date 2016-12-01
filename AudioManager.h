@@ -1,11 +1,7 @@
 /****************************************************************************
  Copyright (c) 2016 Yuji Toki(tokineco)
  - MIT license
-
- BGM: Win32-ogg, wav use SimpleAudioEngine. Other format use AudioEngine.
- SE: Win32-wav use SimpleAudioEngine. Other format use AudioEngine.
 ****************************************************************************/
-
 #ifndef __AudioManager__
 #define __AudioManager__
 
@@ -134,9 +130,6 @@ public:
 private:
     // 環境に応じて拡張子付きファイル名に変換する
     std::string getFileName(AudioType type, std::string baseName);
-
-    // SimpleEngineを使うかどうか
-    bool isSimpleAudioEngine(AudioType type, const std::string fileName);
 
     // pauseBgmの実行(fadeなし、またはupdateによるフェード後に実行される)
     void pauseBgmEngine();

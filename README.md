@@ -25,7 +25,7 @@ MIT Licenseのもと、自由に使用できます。
 
 ---
 ### AudioManager
-AudioManagerでは、一部のプラットフォーム・形式を除いてCocos2d-xのAudioEngineを使用しています。  
+AudioManagerでは、Cocos2d-xのAudioEngineを使用しています。  
 **BGMのフェードや区間ループ、SEのチャンク指定再生にも対応しています。**
 
 シンプルな使い方

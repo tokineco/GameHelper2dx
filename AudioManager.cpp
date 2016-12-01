@@ -299,7 +299,7 @@ void AudioManager::update(float dt) {
             }
 
             if (// 2回目以降なのに、ループ開始地点より前にあったら
-                (_bgmLoopList[_bgmFileName].isLoopInterval && currentTime < startPos - 0.1f)
+                (_bgmLoopList[_bgmFileName].isLoopInterval && currentTime < startPos - 0.4f)
                 // または、endPosが終端近くではなくて、endPosを超えている場合
                 || (duration - endPos >= 0.2f && currentTime >= endPos)) {
 

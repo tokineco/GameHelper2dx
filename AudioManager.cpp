@@ -18,7 +18,10 @@ cocos2d::Scheduler* AudioManager::_scheduler = nullptr;
 
 // コンストラクタ
 AudioManager::AudioManager()
-    : _audioListFile("")
+    : _bgmId(-1)
+    , _bgmFileName("")
+    , _bgmFileExt("")
+    , _audioListFile("")
     , _bgmVolume(0.5f)
     , _seVolume(0.6f)
     , _fadeCondition(FadeType::NONE)
@@ -273,7 +276,7 @@ void AudioManager::update(float dt) {
     // ループチェック
     if (this->isPlayingBgm() && _bgmLoopList.count(_bgmFileName) > 0) {
 
-        std::string fileName = getFileName(AudioType::BGM, _bgmFileName);
+        std::string fileName = _bgmFileName + _bgmFileExt;
 
         if (fileName != "") {
             // 現在のBGM情報を取得
@@ -364,6 +367,9 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
         // 前回と同じファイル名で、再生中の場合は無視する
         return _bgmId;
     }
+
+    // 拡張子を登録
+    _bgmFileExt = fileName.substr(fileName.size() - 4, 4);
 
     // 前回のBGMを停止
     stopBgm();
@@ -477,6 +483,7 @@ void AudioManager::stopBgmEngine(bool release /* = true */) {
 
     _bgmId = AudioEngine::INVALID_AUDIO_ID;
     _bgmFileName = "";
+    _bgmFileExt = "";
 
 }
 
@@ -487,7 +494,7 @@ bool AudioManager::isPlayingBgm() {
         return false;
     }
 
-    std::string fileName = getFileName(AudioType::BGM, _bgmFileName);
+    std::string fileName = _bgmFileName + _bgmFileExt;
 
     AudioEngine::AudioState state = AudioEngine::getState(_bgmId);
     if (state == AudioEngine::AudioState::PLAYING) {
@@ -515,7 +522,7 @@ float AudioManager::getBgmVolume() {
 
 // BGMのキャシュを解放する
 void AudioManager::releaseBgm() {
-    auto fileName = getFileName(AudioType::BGM, _bgmFileName);
+    auto fileName = _bgmFileName + _bgmFileExt;
     AudioEngine::uncache(fileName);
 }
 

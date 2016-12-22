@@ -46,9 +46,11 @@ private:
     int _chunk[8];
 
     // BGMは1種類のみ
-    int _bgmId = -1;
+    int _bgmId;
     // 同じファイル名の場合は無視
-    std::string _bgmFileName = "";
+    std::string _bgmFileName;
+    // 再生中BGMの拡張子
+    std::string _bgmFileExt;
 
     // オーディオ管理ファイルを使用する場合はそのファイルパス
     CC_SYNTHESIZE(std::string, _audioListFile, AudioListFile);

@@ -276,9 +276,7 @@ void AudioManager::update(float dt) {
     // ループチェック
     if (this->isPlayingBgm() && _bgmLoopList.count(_bgmFileName) > 0) {
 
-        std::string fileName = _bgmFileName + _bgmFileExt;
-
-        if (fileName != "") {
+        if (_bgmFileName != "") {
             // 現在のBGM情報を取得
             float currentTime = AudioEngine::getCurrentTime(_bgmId);    // 現在の位置
             float duration = AudioEngine::getDuration(_bgmId);                  // オーディオの長さ

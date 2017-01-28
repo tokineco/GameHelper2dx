@@ -31,6 +31,9 @@ public:
     // 文字列の先頭と末尾にあるホワイトスペースを取り除く
     static std::string trim(const std::string& str, const char* trimChars = " \t\v\r\n");
 
+    // 秒を分と秒に分けて文字列に変換する
+    static std::string secToMinSecString(int sec, std::string format = "%02d:%02d");
+
 };
 
 #endif /* defined(__Converter__) */

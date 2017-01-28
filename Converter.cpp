@@ -104,3 +104,13 @@ std::string Converter::trim(const std::string& str, const char* trimChars /* = "
 
     return result;
 }
+
+// 秒を分と秒に分けて文字列に変換する
+std::string Converter::secToMinSecString(int sec, std::string format /*= "%02d : %02d"*/ ) {
+
+    int allSec = std::floor(sec);
+    int viewMin = allSec / 60;
+    int viewSec = allSec % 60;
+
+    return StringUtils::format(format.c_str(), viewMin, viewSec);
+}

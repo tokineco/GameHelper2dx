@@ -59,12 +59,17 @@ bool Converter::stringToBool(const std::string &strBool) {
 
 // 文字列のSplit
 std::vector<std::string> Converter::split(const std::string &str, const char &delim) {
+    return split(str, std::string() + delim);
+}
+
+// 文字列のSplit
+std::vector<std::string> Converter::split(const std::string &str, const std::string &delim) {
 
     std::vector<std::string> result;
     std::string::size_type current = 0;
 
     while (current != std::string::npos) {
-        std::string::size_type delimIdx = str.find_first_of(delim, current);
+        std::string::size_type delimIdx = str.find(delim, current);
 
         if (delimIdx == std::string::npos) {
             result.push_back(str.substr(current));

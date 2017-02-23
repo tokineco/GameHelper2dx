@@ -24,6 +24,7 @@ public:
 
     // 文字列のsplit
     static std::vector<std::string> split(const std::string &str, const char &delim);
+    static std::vector<std::string> split(const std::string &str, const std::string &delim);
 
     // 文字列の全置換
     static std::string replaceAll(const std::string str, std::string before, std::string after);

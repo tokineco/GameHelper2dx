@@ -19,6 +19,16 @@ int MathHelper::getRandom(int minValue, int maxValue) {
     return num(mt);
 }
 
+// 与えられた角度を0～359の範囲の角度にして返す
+int MathHelper::getDegreesAngle(int angle) {
+
+    angle %= 360;
+    if (angle < 0) {
+        angle += 360;
+    }
+    return angle;
+}
+
 // 文字列で渡された比較演算子の結果を返す
 bool MathHelper::isComparisonValue(int leftValue, std::string symbol, int rightValue) {
 

@@ -51,7 +51,7 @@ AudioManager* AudioManager::getInstance() {
         // スケジューラをインスタンスに追加し、updateを呼び出せるようにする
         _scheduler = Director::getInstance()->getScheduler();
         _scheduler->retain();
-        _scheduler->scheduleUpdate(_instance, 0, false);
+        _scheduler->scheduleUpdate(_instance, -1, false);
 	}
 
 	return _instance;
@@ -305,7 +305,9 @@ void AudioManager::update(float dt) {
                 || (duration - endPos >= 0.2f && currentTime >= endPos)) {
 
                 CCLOG("bgm end. current time is %f sec.", currentTime);
+                AudioEngine::pause(_bgmId);
                 AudioEngine::setCurrentTime(_bgmId, startPos);
+                AudioEngine::resume(_bgmId);
             }
         }
     }

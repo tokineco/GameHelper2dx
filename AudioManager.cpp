@@ -172,13 +172,22 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
     switch (platform) {
         case cocos2d::ApplicationProtocol::Platform::OS_WINDOWS:
 
-            // mp3 > ogg > wav
-            if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
-                ext = ".mp3";
+            if (type == AudioType::BGM) {
+                // mp3 > ogg > wav
+                if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
+                    ext = ".mp3";
+                } else if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
+                    ext = ".ogg";
+                }
+            } else if (type == AudioType::SE) {
+                // ogg > mp3 > wav
+                if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
+                    ext = ".ogg";
+                } else if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
+                    ext = ".mp3";
+                }
             }
-            else if (FileUtils::getInstance()->isFileExist(baseName + ".ogg")) {
-                ext = ".ogg";
-            }
+            
             break;
         case cocos2d::ApplicationProtocol::Platform::OS_ANDROID:
 
@@ -194,11 +203,11 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
         case cocos2d::ApplicationProtocol::Platform::OS_IPHONE:
         case cocos2d::ApplicationProtocol::Platform::OS_IPAD:
 
-            // m4a > caf > mp3 > wav
-            if (FileUtils::getInstance()->isFileExist(baseName + ".m4a")) {
-                ext = ".m4a";
-            } else if (FileUtils::getInstance()->isFileExist(baseName + ".caf")) {
+            // caf > m4a > mp3 > wav
+            if (FileUtils::getInstance()->isFileExist(baseName + ".caf")) {
                 ext = ".caf";
+            } else if (FileUtils::getInstance()->isFileExist(baseName + ".m4a")) {
+                ext = ".m4a";
             } else if (FileUtils::getInstance()->isFileExist(baseName + ".mp3")) {
                 ext = ".mp3";
             }

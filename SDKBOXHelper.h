@@ -31,12 +31,16 @@ public:
     
     // iAPの初期化処理
     static void initIAP();
+
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+    // iAPのリスナーセット(Mobileのみ)
+    static void setIAPListener(sdkbox::IAPListener * listener);
+    //iAPのリスナー削除(Mobileのみ)
+    static void removeIAPListener();
+#endif
+
     // iAPの最新データを取得する
     static void refreshIAP();
-    // iAPのリスナーセット(Mobileのみ)
-#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
-    static void setIAPListener(sdkbox::IAPListener * listener);
-#endif
     // iAPの課金リクエスト
     static void purchaseIAP(const std::string name);
     // iAPのリストア処理

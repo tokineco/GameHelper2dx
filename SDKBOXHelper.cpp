@@ -74,12 +74,15 @@ void SDKBOXHelper::refreshIAP() {
 #endif
 }
 
-// iAPのリスナーセット(Mobileのみ)
 #if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32)
+// iAPのリスナーセット(Mobileのみ)
 void SDKBOXHelper::setIAPListener(sdkbox::IAPListener * listener) {
-    
     sdkbox::IAP::setListener(listener);
+}
 
+// iAPのリスナー削除(Mobileのみ)
+void SDKBOXHelper::removeIAPListener() {
+    sdkbox::IAP::removeListener();
 }
 #endif
 

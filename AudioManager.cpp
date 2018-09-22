@@ -143,6 +143,12 @@ bool AudioManager::readAudioListFile(const std::string fileName) {
 // 端末ごとに読み込む拡張子を変えて、そのファイル名を返す
 std::string AudioManager::getFileName(AudioType type, std::string baseName) {
 
+    if (baseName == "") {
+        // 未指定状態の場合は、その先でエラーとする
+        CCLOG("sound name is none.");
+        return "";
+    }
+
     auto platform = Application::getInstance()->getTargetPlatform();
 
     std::string ext = ".wav";               // 拡張子
@@ -222,7 +228,7 @@ std::string AudioManager::getFileName(AudioType type, std::string baseName) {
 
     // それでも見つからなければ空文字を返して、その先でエラーとする
     CCLOG("file not found %s.", baseName.c_str());
-    return baseName;
+    return "";
 
 }
 
@@ -366,11 +372,10 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime /* =0*/, bo
 // BGMの再生
 int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop, float volume) {
 
-    int soundId = AudioEngine::INVALID_AUDIO_ID;
-
     std::string fileName = getFileName(AudioType::BGM, baseName);
     if (fileName == "") {
-        return soundId;
+        // エラー時は無視する
+        return _bgmId;
     }
 
     if (_bgmFileName == baseName && AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PLAYING) {

@@ -374,7 +374,12 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
 
     std::string fileName = getFileName(AudioType::BGM, baseName);
     if (fileName == "") {
-        // エラー時は無視する
+        CCLOG("play bgm file name is none.");
+        // エラー時、もしPause中なら再度再生する
+        if (AudioEngine::getState(_bgmId) == AudioEngine::AudioState::PAUSED) {
+            CCLOG("crash and paused bgm.resume bgm.");
+            resumeBgm();
+        }
         return _bgmId;
     }
 
@@ -407,6 +412,7 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
         // FinishCallback は ループ中には実行されない
         // 失敗した時のみ実行される
         AudioEngine::setFinishCallback(_bgmId, [this, loop, volume](int bgmId, std::string fileName) {
+            CCLOG("bgm FinishCallback was called.");
             stopBgm(0, false);
             _bgmId = playBgm(_bgmFileName, 0, loop, volume);
         });

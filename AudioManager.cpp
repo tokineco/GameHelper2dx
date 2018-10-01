@@ -413,8 +413,9 @@ int AudioManager::playBgm(const std::string baseName, float fadeTime, bool loop,
         // 失敗した時のみ実行される
         AudioEngine::setFinishCallback(_bgmId, [this, loop, volume](int bgmId, std::string fileName) {
             CCLOG("bgm FinishCallback was called.");
+            std::string preBgmFile = _bgmFileName;
             stopBgm(0, false);
-            _bgmId = playBgm(_bgmFileName, 0, loop, volume);
+            _bgmId = playBgm(preBgmFile, 0, loop, volume);
         });
     }
     

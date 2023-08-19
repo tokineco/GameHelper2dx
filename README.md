@@ -11,9 +11,6 @@ MIT Licenseのもと、自由に使用できます。
 * AudioManager : Audio系ライブラリ
 * Converter : 文字列からの型変換、操作等
 * MathHelper : ランダム値取得等 
-* SDKBOXHelper : SDKBOXを使用した場合のプラットフォーム吸収用
-
->※ SDKBOXHelperに関しては、Windows環境でエラーが出ないようにしたものであり、iOSやAndroidでSDKBOXプラグインが含まれていない場合はエラーとなります。基本的にプロジェクトに含めないようにし、参考程度にしてください。
 
 使用したいヘッダファイルのみをインクルードするか、全てのライブラリ(SDKBOXを除く)を使いたい場合は"GameHelper2dx.h"をインクルードしてください。
   
